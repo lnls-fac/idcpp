@@ -1,0 +1,47 @@
+# ==========================
+# generate_kickmap input file
+# Date: 2016-05-30
+# Accelerator Physics LNLS
+# ==========================
+
+# --- Summary ---
+#
+# this is the input file for generate_kickmap script
+# this script reads a fieldmap from a 3D magnet model and calculates
+# the magnet kickmap. Runge-kutta algorithm is used for the integration
+# of the equations of motion.
+
+
+# --- Input parameters ---
+
+# full name of the file that contains the field map
+
+/home/fac_files/code/insertion_devices/fieldmaps/EPU50_CP_matlab.txt
+
+# full name of the kickmap output file
+
+/home/fac_files/code/insertion_devices/kickmaps/EPU50_CP_matlab_kickmap.txt
+
+# beam energy [eV]
+
+3e9
+
+# Runge-Kutta step
+
+0.01
+
+# Number of points in the radial direction
+
+81
+
+# Number of points in the vertical direction
+
+17
+
+# Horizontal dynamic aperture [mm]
+
+12
+
+# Vertical dynamic aperture [mm]
+
+4.5
