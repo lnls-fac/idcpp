@@ -41,7 +41,16 @@ DBG_FLAG    = -O0 -g3 -std=c++11 -fPIC
 ARFLAGS     = rcs
 DFLAGS      = -DVERSION=$(VERSION)
 
-LIBSOURCES_CPP =  fieldmap.cpp
+LIBSOURCES_CPP =  ap.cpp \
+									alglibinternal.cpp \
+									alglibmisc.cpp \
+									linalg.cpp \
+									integration.cpp \
+									interpolation.cpp \
+									optimization.cpp \
+									solvers.cpp \
+									specialfunctions.cpp \
+									fieldmap.cpp \
 
 BINSOURCES_CPP =	generate_kickmap.cpp
 
@@ -51,13 +60,9 @@ AUXFILES  = VERSION
 
 LIBS = -lm
 INC  = -I./include
-BINDEST_DIR = /usr/local/bin
-LIBDEST_DIR = /usr/local/lib
-INCDEST_DIR = /usr/local/include
 
 OBJDIR = build
 SRCDIR = src
-INCDIR = include
 
 $(shell touch $(SRCDIR)/generate_kickmap.cpp) # this is so that last compilation time always goes into executable
 $(shell touch $(SRCDIR)/tests.cpp) # this is so that last compilation time always goes into executable
@@ -111,19 +116,8 @@ $(BINOBJECTS2): | $(OBJDIR)
 $(OBJDIR):
 	mkdir $(OBJDIR)
 
-$(BINDEST_DIR):
-	mkdir $(BINDEST_DIR)
-
-$(INCDEST_DIR):
-	mkdir $(INCDEST_DIR)
-
 clean:
 	-rm -rf $(OBJDIR) run_test generate_kickmap .depend *.out *.dat *~ *.o *.a *.txt
-
-uninstall:
-	-rm -rf $(BINDEST_DIR)/generate_kickmap
-	-rm -rf $(BINDEST_DIR)/run_test
-	-rm -rf $(LIBDEST_DIR)/libids.a
 
 cleanall: clean
 

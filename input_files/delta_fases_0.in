@@ -20,7 +20,7 @@
 
 # full name of the kickmap output file
 
-/home/fac_files/code/insertion_devices/kickmaps/Full_delta_fases_0_kickmap_interp3D.txt
+/home/fac_files/code/insertion_devices/kickmaps/Full_delta_fases_0_kickmap_spline.txt
 
 # beam energy [eV]
 
@@ -28,15 +28,15 @@
 
 # Runge-Kutta step
 
-0.001
+0.0001
 
 # Number of points in the radial direction
 
-81
+1000
 
 # Number of points in the vertical direction
 
-17
+1
 
 # Horizontal dynamic aperture [mm]
 

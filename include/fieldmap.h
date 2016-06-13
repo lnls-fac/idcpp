@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include "vector3d.hpp"
+#include "linalg.h"
+#include "interpolation.h"
 
 class FieldMap {
 
@@ -17,26 +19,21 @@ public:
 	double x_min, dx, x_max;
 	double y_min, dy, y_max;
 	double z_min, dz, z_max;
+	double physical_length;
 	std::vector<double> x_grid;
 	std::vector<double> y_grid;
 	std::vector<double> z_grid;
 	double *data;
 	std::string fname;
+	bool interpolation2d;
+	alglib::spline3dinterpolant interpolant3d;
+	alglib::spline2dinterpolant interpolant2d;
 
 	FieldMap(const std::string& fname_, size_t id_ = 0);
 
-	size_t       getid() const { return this->id; }
-	size_t       ix(const double& x) const;
-	size_t       iy(const double& y) const;
-	size_t       iz(const double& z) const;
-	double       x(size_t ix) const;
-	double       y(size_t iy) const;
-	double       z(size_t iz) const;
-	double 			 physical_length;
-	Vector3D<double> pos(size_t ix, size_t iy) const;
-	Vector3D<double> field2D(const Vector3D<double>& pos) const;
-	Vector3D<double> field3D(const Vector3D<double>& pos) const;
-	void         delete_data();
+	size_t           getid() const { return this->id; }
+	Vector3D<double> field(const Vector3D<double>& pos) const;
+	void             delete_data();
 
 private:
 
