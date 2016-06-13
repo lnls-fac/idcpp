@@ -27,10 +27,12 @@ void FieldMap::delete_data() {
 inline
 size_t FieldMap::ix(const double& x) const
 {
-	size_t ix = floor(0.5 + (x - this->x_min) / this->dx);
-	if (ix < 0) { throw FieldMapException::out_of_range_x_min; }
-	if (ix >= this->nx) { throw FieldMapException::out_of_range_x_max;  }
-	return ix;
+	if (this->nx > 1){
+		size_t ix = floor(0.5 + (x - this->x_min) / this->dx);
+		if (ix < 0) { throw FieldMapException::out_of_range_x_min; }
+		if (ix >= this->nx) { throw FieldMapException::out_of_range_x_max;  }
+		return ix;
+	} else return 0;
 }
 
 inline
@@ -41,18 +43,18 @@ size_t FieldMap::iy(const double& y) const
 		if (iy < 0) { throw FieldMapException::out_of_range_y_min;  }
 		if (iy >= this->ny) { throw FieldMapException::out_of_range_y_max; }
 		return iy;
-	} else {
-		return 0;
-	}
+	} else return 0;
 }
 
 inline
 size_t FieldMap::iz(const double& z) const
 {
-	size_t iz = floor(0.5 + (z - this->z_min) / this->dz);
-	if (iz < 0) {	throw FieldMapException::out_of_range_z_min; }
-	if (iz >= this->nz) { throw FieldMapException::out_of_range_z_max;}
-	return iz;
+	if (this->nz > 1){
+		size_t iz = floor(0.5 + (z - this->z_min) / this->dz);
+		if (iz < 0) {	throw FieldMapException::out_of_range_z_min; }
+		if (iz >= this->nz) { throw FieldMapException::out_of_range_z_max;}
+		return iz;
+	} else return 0;
 }
 
 inline
@@ -108,8 +110,6 @@ void FieldMap::read_fieldmap_from_file(const std::string& fname_)
 
 	this->physical_length = std::atof(comprimento.c_str())/1000.0;
 
-	std::cout << "leu cabeçalho" << std::endl;
-
 	// reads data section
 	std::set<double> x_set, y_set, z_set;
 	double x,y,z,bx,by,bz;
@@ -129,34 +129,25 @@ void FieldMap::read_fieldmap_from_file(const std::string& fname_)
 		if (file.eof()) break;
 		x_set.insert(x/1000.0); y_set.insert(y/1000.0); z_set.insert(z/1000.0);
 		nr_points++;
-
-		if (nr_points % 100000 == 0) std::cout << nr_points << std::endl;
-
 	}
 	// updates object properties
-	this->fname = fname_;
-	this->data  = (double*) std::realloc(this->data, nr_points*3*sizeof(double));
-	this->nx    = x_set.size();
-	this->ny    = y_set.size();
-	this->nz    = z_set.size();
-	this->x_min = *(x_set.begin()) ;
-	this->x_max = *(x_set.rbegin()) ;
-	this->y_min = *(y_set.begin()) ;
-	this->y_max = *(y_set.rbegin()) ;
-	this->z_min = *(z_set.begin()) ;
-	this->z_max = *(z_set.rbegin()) ;
-	this->dx    = (this->x_max - this->x_min)/(this->nx - 1);
-	if (this->ny > 1) {
-		this->dy = (this->y_max - this->y_min)/(this->ny - 1);
-	} else{
-		this->dy = 0;
-	}
-	this->dz    = (this->z_max - this->z_min)/(this->nz - 1);
-
-	// throws exception in case dimensions do not agree
-	if (nr_points != (this->nx * this->nz * this->ny)) {
-		throw FieldMapException::inconsistent_dimensions;
-	}
+	this->fname  = fname_;
+	this->data   = (double*) std::realloc(this->data, nr_points*3*sizeof(double));
+	this->nx     = x_set.size();
+	this->ny     = y_set.size();
+	this->nz     = z_set.size();
+	this->x_min  = *(x_set.begin()) ;
+	this->x_max  = *(x_set.rbegin()) ;
+	this->y_min  = *(y_set.begin()) ;
+	this->y_max  = *(y_set.rbegin()) ;
+	this->z_min  = *(z_set.begin()) ;
+	this->z_max  = *(z_set.rbegin()) ;
+	this->dx     = (this->nx > 1) ? (this->x_max - this->x_min)/(this->nx - 1) : 0.0;
+	this->dy     = (this->ny > 1) ? (this->y_max - this->y_min)/(this->ny - 1) : 0.0;
+	this->dz     = (this->nz > 1) ? (this->z_max - this->z_min)/(this->nz - 1) : 0.0;
+	this->x_grid.assign(x_set.begin(), x_set.end());
+	this->y_grid.assign(y_set.begin(), y_set.end());
+	this->z_grid.assign(z_set.begin(), z_set.end());
 
 	// std::cout << "nr.points       : " << nr_points    << std::endl;
 	// std::cout << "nr.points.x_set : " << this->nx     << std::endl;
@@ -172,11 +163,16 @@ void FieldMap::read_fieldmap_from_file(const std::string& fname_)
 	// std::cout << "dy              : " << this->dy     << std::endl;
 	// std::cout << "dz              : " << this->dz     << std::endl;
 
+	// throws exception in case dimensions do not agree
+	if (nr_points != (this->nx * this->nz * this->ny)) {
+		throw FieldMapException::inconsistent_dimensions;
+	}
+
 	file.close();
 
 }
 
-Vector3D<double> FieldMap::field(const Vector3D<double>& pos) const
+Vector3D<double> FieldMap::field2D(const Vector3D<double>& pos) const
 {
 
 	// calcs indices

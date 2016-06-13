@@ -1,2 +1,5 @@
 fieldmaps/*
 *~
+build/*
+kickmaps/*
+*.depend

@@ -2,6 +2,7 @@
 #define FIELD_MAP_H
 
 #include <string>
+#include <vector>
 #include "vector3d.hpp"
 
 class FieldMap {
@@ -16,6 +17,9 @@ public:
 	double x_min, dx, x_max;
 	double y_min, dy, y_max;
 	double z_min, dz, z_max;
+	std::vector<double> x_grid;
+	std::vector<double> y_grid;
+	std::vector<double> z_grid;
 	double *data;
 	std::string fname;
 
@@ -30,7 +34,7 @@ public:
 	double       z(size_t iz) const;
 	double 			 physical_length;
 	Vector3D<double> pos(size_t ix, size_t iy) const;
-	Vector3D<double> field(const Vector3D<double>& pos) const;
+	Vector3D<double> field2D(const Vector3D<double>& pos) const;
 	Vector3D<double> field3D(const Vector3D<double>& pos) const;
 	void         delete_data();
 

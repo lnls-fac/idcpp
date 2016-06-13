@@ -57,6 +57,23 @@ void read_input_file(std::string input_filename, bool& status, InputParameters& 
   }
 }
 
+void grid_to_avoid_numerical_error(FieldMap fieldmap, std::vector<double>& x, std::vector<double>& y){
+  std::vector<double> x_grid = fieldmap.x_grid;
+  std::vector<double> y_grid = fieldmap.y_grid;
+  int x_size = x_grid.size() - 1;
+  int y_size = y_grid.size() - 1;
+  if (x_size > 1){
+    for(int j = 0; j < x_size; j+=1){
+      x.push_back((x_grid[j] + x_grid[j+1])/2.0);
+    }
+  } else x.push_back(x_grid[0]);
+  if (y_size > 1){
+    for(int i = 0; i < y_size; i+=1){
+      y.push_back((y_grid[i] + y_grid[i+1])/2.0);
+    }
+  } else y.push_back(y_grid[0]);
+}
+
 void grid(int nrpts_x, int nrpts_y, double aperture_x, double aperture_y, std::vector<double>& x, std::vector<double>& y){
   if (nrpts_x > 1){
     for(int j = 0; j < nrpts_x; j+=1){
@@ -75,6 +92,16 @@ void calc_brho(double energy, double& beta, double& brho){
   beta  = std::sqrt(1.0 - 1.0 / (gamma * gamma));
   brho  = (beta * energy / light_speed);
 }
+
+void calc_field_2D(FieldMap fieldmap, Vector3D<> r, Vector3D<>& b){
+  Vector3D<> field;
+  try {
+    field = fieldmap.field2D(r);
+  } catch (...)
+  { }
+  b = field;
+}
+
 
 void calc_field_3D(FieldMap fieldmap, Vector3D<> r, Vector3D<>& b){
   Vector3D<> field;
@@ -134,12 +161,12 @@ void runge_kutta(FieldMap fieldmap, double brho, double beta, double s_step, dou
   kicks = p;
 }
 
-
 void generate_kickmap(InputParameters inputs){
 
   time_t now = time(0); char* date = ctime(&now);
 
   try{
+    std::cout << "Reading fieldmap file..." << std::endl;
     FieldMap fieldmap(inputs.fieldmap_filename);
 
     std::ofstream output_file(inputs.kickmap_filename.c_str());
@@ -148,6 +175,7 @@ void generate_kickmap(InputParameters inputs){
     } else {
       std::vector<double> x; std::vector<double> y;
       grid(inputs.nrpts_x, inputs.nrpts_y, inputs.dynamic_aperture_x, inputs.dynamic_aperture_y, x, y);
+      //grid_to_avoid_numerical_error(fieldmap, x, y);
 
       double beta; double brho;
       calc_brho(inputs.energy, beta, brho);
@@ -160,7 +188,8 @@ void generate_kickmap(InputParameters inputs){
       Vector3D<> p(0.0, 0.0, 1.0);
       Vector3D<> kicks;
 
-      int w = 0;
+      std::cout << "Calculating kickmap..." << std::endl;
+      int count = 0;
       for(int i = 0; i < y.size(); i+=1){
         for(int j =0; j < x.size(); j+=1){
           r.x = x[j];
@@ -168,8 +197,8 @@ void generate_kickmap(InputParameters inputs){
           runge_kutta(fieldmap, brho, beta, inputs.rk_step, max_rz, r, p, kicks);
           kick_x[i][j] = kicks.x;
           kick_y[i][j] = kicks.y;
-          w += 1;
-          std::cout << w << std::endl;
+          count += 1;
+          std::cout << count << std::endl;
         }
       }
 
@@ -212,6 +241,8 @@ void generate_kickmap(InputParameters inputs){
         output_file << std::endl;
       }
     }
+    std::cout << "Kickmap saved in file: " << inputs.kickmap_filename << std::endl;
+
   }
   catch(...){
     std::cout << "Can't open fieldmap file!" << std::endl;
@@ -220,6 +251,10 @@ void generate_kickmap(InputParameters inputs){
 
 
 int main(int argc, char ** argv) {
+  struct timespec start, finish;
+  double elapsed;
+  clock_gettime(CLOCK_MONOTONIC, &start);
+
   InputParameters inputs;
   bool status;
 
@@ -232,5 +267,28 @@ int main(int argc, char ** argv) {
     read_input_file(input_filename, status, inputs);
   }
 
+  // Test interpolation 2D and 3D
+  // FieldMap fieldmap(inputs.fieldmap_filename);
+  // Vector3D<> pos0(0.003, 0.0, 0.9);
+  // Vector3D<> pos(0.003, 0.01, 0.9);
+  // Vector3D<> b0;
+  // Vector3D<> b;
+  // calc_field_3D(fieldmap, pos0, b0);
+  // calc_field_3D(fieldmap, pos, b);
+  // std::cout << "3D interpolation:" << std::endl;
+  // std::cout << pos0 << " " << b0 << std::endl;
+  // std::cout << pos << " " << b << std::endl;
+  // calc_field_2D(fieldmap, pos0, b0);
+  // calc_field_2D(fieldmap, pos, b);
+  // std::cout << "2D interpolation: "  << std::endl;
+  // std::cout << pos0 << " " << b0 << std::endl;
+  // std::cout << pos << " " << b << std::endl;
+
   if(status) generate_kickmap(inputs);
+
+  clock_gettime(CLOCK_MONOTONIC, &finish);
+  elapsed = (finish.tv_sec - start.tv_sec);
+  elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
+  std::cout << "Elaped time: " << elapsed << " s" << std::endl;
+  std::cout << std::endl;
 }
