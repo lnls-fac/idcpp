@@ -75,7 +75,7 @@ void calc_brho(double energy, double& beta, double& brho){
   brho  = (beta * energy / light_speed);
 }
 
-void newton_lorentz_equation(double alpha, Vector3D<> r, Vector3D<> p,  Vector3D<> b, Vector3D<>& dr_ds, Vector3D<>& dp_ds, double& total_time){
+void newton_lorentz_equation(double alpha, Vector3D<> r, Vector3D<> p,  Vector3D<> b, Vector3D<>& dr_ds, Vector3D<>& dp_ds){
   dr_ds.x = p.x;
   dr_ds.y = p.y;
   dr_ds.z = p.z;
@@ -88,9 +88,6 @@ void runge_kutta(FieldMap fieldmap, double brho, double beta, double s_step, dou
 
   double alpha = 1.0/brho/beta;
   double s = 0;
-  int i = 0;
-  double total_time = 0;
-
   Vector3D<> b; Vector3D<> b1; Vector3D<> b2; Vector3D<> b3;
   Vector3D<> kr1; Vector3D<> kp1; Vector3D<> r1; Vector3D<> p1;
   Vector3D<> kr2; Vector3D<> kp2; Vector3D<> r2; Vector3D<> p2;
@@ -101,30 +98,29 @@ void runge_kutta(FieldMap fieldmap, double brho, double beta, double s_step, dou
 
     try { b = fieldmap.field(r); }
     catch (...) { b.x = b.y = b.z = 0.0; }
-    newton_lorentz_equation(alpha, r, p, b, kr1, kp1, total_time);
+    newton_lorentz_equation(alpha, r, p, b, kr1, kp1);
     r1 = r + (s_step/2.0)* kr1;
     p1 = p + (s_step/2.0)* kp1;
 
     try { b1 = fieldmap.field(r1); }
     catch (...) { b1.x = b1.y = b1.z = 0.0; }
-    newton_lorentz_equation(alpha, r1, p1, b1, kr2, kp2, total_time);
+    newton_lorentz_equation(alpha, r1, p1, b1, kr2, kp2);
     r2 = r + (s_step/2.0)* kr2;
     p2 = p + (s_step/2.0)* kp2;
 
     try { b2 = fieldmap.field(r2); }
     catch (...) { b2.x = b2.y = b2.z = 0.0; }
-    newton_lorentz_equation(alpha, r2, p2, b2, kr3, kp3, total_time);
+    newton_lorentz_equation(alpha, r2, p2, b2, kr3, kp3);
     r3 = r + s_step* kr3;
     p3 = p + s_step* kp3;
 
     try { b3 = fieldmap.field(r3); }
     catch (...) { b3.x = b3.y = b3.z = 0.0; }
-    newton_lorentz_equation(alpha, r3, p3, b3, kr4, kp4, total_time);
+    newton_lorentz_equation(alpha, r3, p3, b3, kr4, kp4);
 
     r = r + (s_step/6.0)*(kr1 + 2.0*kr2 + 2.0*kr3 + kr4);
     p = p + (s_step/6.0)*(kp1 + 2.0*kp2 + 2.0*kp3 + kp4);
     s += s_step;
-    i += 1;
 
     // trajectory
     //std::cout << r.x << " " << r.y << " " << r.z << " " << p.x << " " << p.y << " " << p.z << std::endl;
@@ -169,7 +165,7 @@ void generate_kickmap(InputParameters inputs){
           kick_x[i][j] = kicks.x;
           kick_y[i][j] = kicks.y;
           count += 1;
-          //std::cout << count << std::endl;
+          std::cout << count << std::endl;
         }
       }
 
@@ -238,11 +234,13 @@ int main(int argc, char ** argv) {
     read_input_file(input_filename, status, inputs);
   }
 
-  if(status) generate_kickmap(inputs);
+  if(status) {
+    generate_kickmap(inputs);
+    clock_gettime(CLOCK_MONOTONIC, &finish);
+    elapsed = (finish.tv_sec - start.tv_sec);
+    elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
+    std::cout << "Elapsed time: " << elapsed << " s" << std::endl;
+    std::cout << std::endl;
+  }
 
-  clock_gettime(CLOCK_MONOTONIC, &finish);
-  elapsed = (finish.tv_sec - start.tv_sec);
-  elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
-  std::cout << "Elapsed time: " << elapsed << " s" << std::endl;
-  std::cout << std::endl;
 }

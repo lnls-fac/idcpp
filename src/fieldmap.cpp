@@ -95,27 +95,26 @@ void FieldMap::read_fieldmap_from_file(const std::string& fname_)
 	this->y_grid.assign(y_set.begin(), y_set.end());
 	this->z_grid.assign(z_set.begin(), z_set.end());
 
-	// std::cout << "nr.points       : " << nr_points    << std::endl;
-	// std::cout << "nr.points.x_set : " << this->nx     << std::endl;
-	// std::cout << "nr.points.y_set : " << this->ny     << std::endl;
-	// std::cout << "nr.points.z_set : " << this->nz     << std::endl;
-	// std::cout << "min.x           : " << this->x_min  << std::endl;
-	// std::cout << "max.x           : " << this->x_max  << std::endl;
-	// std::cout << "min.y           : " << this->y_min  << std::endl;
-	// std::cout << "max.y           : " << this->y_max  << std::endl;
-	// std::cout << "min.z           : " << this->z_min  << std::endl;
-	// std::cout << "max.z           : " << this->z_max  << std::endl;
-	// std::cout << "dx              : " << this->dx     << std::endl;
-	// std::cout << "dy              : " << this->dy     << std::endl;
-	// std::cout << "dz              : " << this->dz     << std::endl;
+	std::cout << "nr.points       : " << nr_points    << std::endl;
+	std::cout << "nr.points.x_set : " << this->nx     << std::endl;
+	std::cout << "nr.points.y_set : " << this->ny     << std::endl;
+	std::cout << "nr.points.z_set : " << this->nz     << std::endl;
+	std::cout << "min.x           : " << this->x_min  << std::endl;
+	std::cout << "max.x           : " << this->x_max  << std::endl;
+	std::cout << "min.y           : " << this->y_min  << std::endl;
+	std::cout << "max.y           : " << this->y_max  << std::endl;
+	std::cout << "min.z           : " << this->z_min  << std::endl;
+	std::cout << "max.z           : " << this->z_max  << std::endl;
+	std::cout << "dx              : " << this->dx     << std::endl;
+	std::cout << "dy              : " << this->dy     << std::endl;
+	std::cout << "dz              : " << this->dz     << std::endl;
 
 	// throws exception in case dimensions do not agree
 	if (nr_points != (this->nx * this->nz * this->ny)) {
 		throw FieldMapException::inconsistent_dimensions;
 	}
 
-	this->interpolation2d = false;
-	if (ny == 1) this->interpolation2d = true;
+	this->map2d = (this->ny == 1) ? true : false;
 
 	int data_array_size = 3*this->nx*this->ny*this->nz;
 	alglib::real_1d_array x_array;
@@ -127,13 +126,14 @@ void FieldMap::read_fieldmap_from_file(const std::string& fname_)
 	z_array.setcontent(this->nz, &this->z_grid[0]);
 	data_array.setcontent(data_array_size, &this->data[0]);
 
-	if (this->interpolation2d){
+	if (this->map2d){
+		std::cout << "2d" << std::endl;
 		alglib::spline2dinterpolant interpolant2d;
-		alglib::spline2dbuildbilinearv(x_array, nx, z_array, nz, data_array, 3, interpolant2d);
+		alglib::spline2dbuildbicubicv(x_array, nx, z_array, nz, data_array, 3, interpolant2d);
 		this->interpolant2d = interpolant2d;
 	} else{
 		alglib::spline3dinterpolant interpolant3d;
-		alglib::spline3dbuildtrilinearv(x_array,nx, y_array, ny, z_array, nz, data_array, 3, interpolant3d);
+		alglib::spline3dbuildtrilinearv(x_array, nx, y_array, ny, z_array, nz, data_array, 3, interpolant3d);
 		this->interpolant3d = interpolant3d;
 	}
 
@@ -149,14 +149,13 @@ Vector3D<double> FieldMap::field(const Vector3D<double>& pos) const{
 	if (pos.z < this->z_min) { throw FieldMapException::out_of_range_z_min; }
 	if (pos.z > this->z_max) { throw FieldMapException::out_of_range_z_max; }
 
-	if (this->interpolation2d){
-
+	if (this->map2d){
 		alglib::real_1d_array field2d;
 		alglib::spline2dcalcv(interpolant2d, pos.x, pos.z, field2d);
 		return Vector3D<double>(field2d[0], field2d[1], field2d[2]);
 
 	} else {
-		
+
 		if (pos.y < this->y_min) { throw FieldMapException::out_of_range_y_min; }
 		if (pos.y > this->y_max) { throw FieldMapException::out_of_range_y_max; }
 

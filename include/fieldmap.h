@@ -11,7 +11,6 @@ class FieldMap {
 
 public:
 
-	friend void  load_fieldmap(const std::string& fname, size_t& id, size_t& nx, double& x_min, double& x_max, size_t& nz, double& z_min, double& z_max);
 	size_t id;
 	size_t nx;
 	size_t ny;
@@ -25,9 +24,6 @@ public:
 	std::vector<double> z_grid;
 	double *data;
 	std::string fname;
-	bool interpolation2d;
-	alglib::spline3dinterpolant interpolant3d;
-	alglib::spline2dinterpolant interpolant2d;
 
 	FieldMap(const std::string& fname_, size_t id_ = 0);
 
@@ -37,6 +33,9 @@ public:
 
 private:
 
+	bool map2d;
+	alglib::spline3dinterpolant interpolant3d;
+	alglib::spline2dinterpolant interpolant2d;
 	void read_fieldmap_from_file(const std::string& fname_);
 
 };
