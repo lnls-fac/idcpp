@@ -12,9 +12,8 @@
 
 FieldMap::FieldMap(const std::string& fname_, size_t id_) :
 		id(id_),
-		nx(0), nz(0), ny(0),
+		nx(0), nz(0),
 		x_min(0), dx(0), x_max(0),
-		y_min(0), dy(0), y_max(0),
 		z_min(0), dz(0), z_max(0),
 		data(0)
 {
@@ -76,91 +75,68 @@ void FieldMap::read_fieldmap_from_file(const std::string& fname_)
 		x_set.insert(x/1000.0); y_set.insert(y/1000.0); z_set.insert(z/1000.0);
 		nr_points++;
 	}
+
+	if (y_set.size() != 1) {
+		throw FieldMapException::inconsistent_dimensions;
+	}
+
 	// updates object properties
 	this->fname  = fname_;
 	this->data   = (double*) std::realloc(this->data, nr_points*3*sizeof(double));
 	this->nx     = x_set.size();
-	this->ny     = y_set.size();
 	this->nz     = z_set.size();
-	this->x_min  = *(x_set.begin()) ;
-	this->x_max  = *(x_set.rbegin()) ;
-	this->y_min  = *(y_set.begin()) ;
-	this->y_max  = *(y_set.rbegin()) ;
-	this->z_min  = *(z_set.begin()) ;
-	this->z_max  = *(z_set.rbegin()) ;
+	this->x_min  = *(x_set.begin());
+	this->x_max  = *(x_set.rbegin());
+	this->z_min  = *(z_set.begin());
+	this->z_max  = *(z_set.rbegin());
+	this->y      = *(y_set.begin());
 	this->dx     = (this->nx > 1) ? (this->x_max - this->x_min)/(this->nx - 1) : 0.0;
-	this->dy     = (this->ny > 1) ? (this->y_max - this->y_min)/(this->ny - 1) : 0.0;
 	this->dz     = (this->nz > 1) ? (this->z_max - this->z_min)/(this->nz - 1) : 0.0;
 	this->x_grid.assign(x_set.begin(), x_set.end());
-	this->y_grid.assign(y_set.begin(), y_set.end());
 	this->z_grid.assign(z_set.begin(), z_set.end());
 
-	std::cout << "nr.points       : " << nr_points    << std::endl;
-	std::cout << "nr.points.x_set : " << this->nx     << std::endl;
-	std::cout << "nr.points.y_set : " << this->ny     << std::endl;
-	std::cout << "nr.points.z_set : " << this->nz     << std::endl;
-	std::cout << "min.x           : " << this->x_min  << std::endl;
-	std::cout << "max.x           : " << this->x_max  << std::endl;
-	std::cout << "min.y           : " << this->y_min  << std::endl;
-	std::cout << "max.y           : " << this->y_max  << std::endl;
-	std::cout << "min.z           : " << this->z_min  << std::endl;
-	std::cout << "max.z           : " << this->z_max  << std::endl;
-	std::cout << "dx              : " << this->dx     << std::endl;
-	std::cout << "dy              : " << this->dy     << std::endl;
-	std::cout << "dz              : " << this->dz     << std::endl;
+	// std::cout << "nr.points       : " << nr_points    << std::endl;
+	// std::cout << "nr.points.x_set : " << this->nx     << std::endl;
+	// std::cout << "nr.points.z_set : " << this->nz     << std::endl;
+	// std::cout << "min.x           : " << this->x_min  << std::endl;
+	// std::cout << "max.x           : " << this->x_max  << std::endl;
+	// std::cout << "min.z           : " << this->z_min  << std::endl;
+	// std::cout << "max.z           : " << this->z_max  << std::endl;
+	// std::cout << "dx              : " << this->dx     << std::endl;
+	// std::cout << "dz              : " << this->dz     << std::endl;
 
 	// throws exception in case dimensions do not agree
-	if (nr_points != (this->nx * this->nz * this->ny)) {
+	if (nr_points != (this->nx * this->nz )) {
 		throw FieldMapException::inconsistent_dimensions;
 	}
 
-	this->map2d = (this->ny == 1) ? true : false;
-
-	int data_array_size = 3*this->nx*this->ny*this->nz;
+	int data_array_size = 3*this->nx*this->nz;
 	alglib::real_1d_array x_array;
-	alglib::real_1d_array y_array;
 	alglib::real_1d_array z_array;
 	alglib::real_1d_array data_array;
 	x_array.setcontent(this->nx, &this->x_grid[0]);
-	y_array.setcontent(this->ny, &this->y_grid[0]);
 	z_array.setcontent(this->nz, &this->z_grid[0]);
 	data_array.setcontent(data_array_size, &this->data[0]);
 
-	if (this->map2d){
-		std::cout << "2d" << std::endl;
-		alglib::spline2dinterpolant interpolant2d;
-		alglib::spline2dbuildbicubicv(x_array, nx, z_array, nz, data_array, 3, interpolant2d);
-		this->interpolant2d = interpolant2d;
-	} else{
-		alglib::spline3dinterpolant interpolant3d;
-		alglib::spline3dbuildtrilinearv(x_array, nx, y_array, ny, z_array, nz, data_array, 3, interpolant3d);
-		this->interpolant3d = interpolant3d;
-	}
+	alglib::spline2dinterpolant interpolant;
+	alglib::spline2dbuildbicubicv(x_array, nx, z_array, nz, data_array, 3, interpolant);
+	this->interpolant = interpolant;
 
+	this->delete_data();
 	file.close();
 
 }
 
 Vector3D<double> FieldMap::field(const Vector3D<double>& pos) const{
 
-	if (pos.x < this->x_min) { throw FieldMapException::out_of_range_x_min; }
-	if (pos.x > this->x_max) { throw FieldMapException::out_of_range_x_max; }
+	// if (pos.x < this->x_min) { throw FieldMapException::out_of_range_x_min; }
+	// if (pos.x > this->x_max) { throw FieldMapException::out_of_range_x_max; }
+	//
+	// if (pos.z < this->z_min) { throw FieldMapException::out_of_range_z_min; }
+	// if (pos.z > this->z_max) { throw FieldMapException::out_of_range_z_max; }
 
-	if (pos.z < this->z_min) { throw FieldMapException::out_of_range_z_min; }
-	if (pos.z > this->z_max) { throw FieldMapException::out_of_range_z_max; }
+	alglib::real_1d_array field;
+	alglib::spline2dcalcv(this->interpolant, pos.x, pos.z, field);
+	return Vector3D<double>(field[0], field[1], field[2]);
 
-	if (this->map2d){
-		alglib::real_1d_array field2d;
-		alglib::spline2dcalcv(interpolant2d, pos.x, pos.z, field2d);
-		return Vector3D<double>(field2d[0], field2d[1], field2d[2]);
-
-	} else {
-
-		if (pos.y < this->y_min) { throw FieldMapException::out_of_range_y_min; }
-		if (pos.y > this->y_max) { throw FieldMapException::out_of_range_y_max; }
-
-		alglib::real_1d_array field3d;
-		alglib::spline3dcalcv(interpolant3d, pos.x, pos.y, pos.z, field3d);
-		return Vector3D<double>(field3d[0], field3d[1], field3d[2]);
-	}
 }

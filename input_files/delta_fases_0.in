@@ -14,13 +14,17 @@
 
 # --- Input parameters ---
 
-# full name of the file that contains the field map
+# full name of the fieldmap files
 
 /home/fac_files/code/insertion_devices/fieldmaps/Full_delta_fases_0_corrected.txt
 
+# Number of fieldmap files
+
+1
+
 # full name of the kickmap output file
 
-/home/fac_files/code/insertion_devices/kickmaps/Full_delta_fases_0_kickmap_spline.txt
+/home/fac_files/code/insertion_devices/kickmaps/Full_delta_fases_0_kickmap.txt
 
 # beam energy [eV]
 
@@ -28,20 +32,20 @@
 
 # Runge-Kutta step
 
-0.0001
+0.001
 
 # Number of points in the radial direction
 
-1000
+81
 
 # Number of points in the vertical direction
 
-1
+17
 
-# Horizontal dynamic aperture [mm]
+# ID width [mm]
 
 4
 
-# Vertical dynamic aperture [mm]
+# ID height [mm]
 
 4

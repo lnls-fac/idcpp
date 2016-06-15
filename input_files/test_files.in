@@ -14,13 +14,22 @@
 
 # --- Input parameters ---
 
-# full name of the file that contains the field map
+# full name of the fieldmap files
 
-/home/fac_files/code/insertion_devices/fieldmaps/EPU50_CP_cpp.txt
+/home/fac_files/code/insertion_devices/fieldmaps/y_0.txt
+/home/fac_files/code/insertion_devices/fieldmaps/y_1.txt
+/home/fac_files/code/insertion_devices/fieldmaps/y_2.txt
+/home/fac_files/code/insertion_devices/fieldmaps/y_3.txt
+/home/fac_files/code/insertion_devices/fieldmaps/y_4.txt
+/home/fac_files/code/insertion_devices/fieldmaps/y_5.txt
+
+# Number of fieldmap files
+
+6
 
 # full name of the kickmap output file
 
-/home/fac_files/code/insertion_devices/kickmaps/EPU50_CP_cpp_kickmap.txt
+/home/fac_files/code/insertion_devices/kickmaps/kickmap.txt
 
 # beam energy [eV]
 
@@ -38,10 +47,10 @@
 
 17
 
-# Horizontal dynamic aperture [mm]
+# ID width [mm]
 
 12
 
-# Vertical dynamic aperture [mm]
+# ID height [mm]
 
 4.5

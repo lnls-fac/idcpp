@@ -14,9 +14,13 @@
 
 # --- Input parameters ---
 
-# full name of the file that contains the field map
+# full name of the fieldmap files
 
 /home/fac_files/code/insertion_devices/fieldmaps/fieldmap.txt
+
+# Number of fieldmap files
+
+1
 
 # full name of the kickmap output file
 
@@ -38,10 +42,10 @@
 
 17
 
-# Horizontal dynamic aperture [mm]
+# ID width [mm]
 
-12
+4
 
-# Vertical dynamic aperture [mm]
+# ID height [mm]
 
-4.5
+4

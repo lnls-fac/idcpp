@@ -3,3 +3,5 @@ fieldmaps/*
 build/*
 kickmaps/*
 *.depend
+input_files/generate_kickmap
+input_files/run_test

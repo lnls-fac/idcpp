@@ -63,6 +63,7 @@ INC  = -I./include
 
 OBJDIR = build
 SRCDIR = src
+BINDEST_DIR = input_files
 
 $(shell touch $(SRCDIR)/generate_kickmap.cpp) # this is so that last compilation time always goes into executable
 $(shell touch $(SRCDIR)/tests.cpp) # this is so that last compilation time always goes into executable
@@ -103,9 +104,13 @@ $(OBJDIR)/libids.a: $(LIBOBJECTS)
 
 $(OBJDIR)/generate_kickmap: libids $(BINOBJECTS)
 	$(CXX) $(LDFLAGS) $(BINOBJECTS) $(OBJDIR)/libids.a $(LIBS) -o $@
+	-rm -rf $(BINDEST_DIR)/generate_kickmap
+	ln -srf $(OBJDIR)/generate_kickmap $(BINDEST_DIR)
 
 $(OBJDIR)/run_test: libids $(BINOBJECTS2)
 	$(CXX) $(LDFLAGS) $(BINOBJECTS2) $(OBJDIR)/libids.a $(LIBS) -o $@
+	-rm -rf $(BINDEST_DIR)/run_test
+	ln -srf $(OBJDIR)/run_test $(BINDEST_DIR)
 
 $(LIBOBJECTS): | $(OBJDIR)
 
@@ -118,6 +123,8 @@ $(OBJDIR):
 
 clean:
 	-rm -rf $(OBJDIR) run_test generate_kickmap .depend *.out *.dat *~ *.o *.a *.txt
+	-rm -rf $(BINDEST_DIR)/generate_kickmap
+	-rm -rf $(BINDEST_DIR)/run_test
 
 cleanall: clean
 
