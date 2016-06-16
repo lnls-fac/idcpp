@@ -32,7 +32,7 @@ void read_input_file(std::string input_filename, bool& status, InputParameters& 
   std::vector<std::string> values;
 
   if (!input_file.is_open()){
-    std::cout << "Can't open input file!" << std::endl;
+    std::cout << "Can't open input file: " << input_filename << std::endl;
     status = false;
   }
   else{
@@ -58,8 +58,10 @@ void read_input_file(std::string input_filename, bool& status, InputParameters& 
 
 
 void load_fieldmaps(InputParameters inputs, std::vector<FieldMap>& fieldmaps, bool& status){
+  std::cout << std::endl;
+  std::cout << "Loading fieldmap files..." << std::endl;
+  std::string filename;
   try{
-    std::string filename;
     for(int i=0; i < inputs.nr_fieldmaps; i+=1){
       filename = inputs.fieldmap_filenames.back(); inputs.fieldmap_filenames.pop_back();
       FieldMap fieldmap(filename.c_str());
@@ -68,6 +70,8 @@ void load_fieldmaps(InputParameters inputs, std::vector<FieldMap>& fieldmaps, bo
       std::cout << "Load " << filename << std::endl;
     }
   } catch (...){
+    std::cout << "Can't open fieldmap file: " << filename << std::endl;
+    std::cout << std::endl;
     status = false;
   }
 }
@@ -236,20 +240,17 @@ void generate_kickmap(InputParameters inputs, bool& status){
 
   time_t now = time(0); char* date = ctime(&now);
 
-  std::cout << std::endl;
-  std::cout << "Loading fieldmap files..." << std::endl;
   std::vector<FieldMap> fieldmaps;
   load_fieldmaps(inputs, fieldmaps, status);
 
-  if (!status){
-    std::cout << "Can't open fieldmap file!" << std::endl;
-  } else {
-
+  if (status){
     std::ofstream output_file(inputs.kickmap_filename.c_str());
 
     if(! output_file) {
       status = false;
-      std::cout << "Can't open output file!" << std::endl;
+      std::cout << std::endl;
+      std::cout << "Can't open output file: " << inputs.kickmap_filename << std::endl;
+      std::cout << std::endl;
     } else {
 
       std::vector<double> x_grid; std::vector<double> y_grid;
@@ -329,9 +330,10 @@ void generate_kickmap(InputParameters inputs, bool& status){
         }
         output_file << std::endl;
       }
+      std::cout << "Kickmap saved in file: " << std::endl;
+      std::cout << inputs.kickmap_filename << std::endl;
+      std::cout << std::endl;
     }
-    std::cout << "Kickmap saved in file: " << inputs.kickmap_filename << std::endl;
-
   }
 }
 

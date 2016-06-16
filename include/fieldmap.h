@@ -32,7 +32,8 @@ public:
 private:
 
 	alglib::spline2dinterpolant interpolant;
-	void read_fieldmap_from_file(const std::string& fname_);
+	void calc_interpolant();
+	void read_fieldmap_from_file(const std::string& fname_, bool header, bool& consistent_dimensions);
 
 };
 

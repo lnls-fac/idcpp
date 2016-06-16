@@ -63,7 +63,10 @@ INC  = -I./include
 
 OBJDIR = build
 SRCDIR = src
-BINDEST_DIR = input_files
+BINDEST_DIR = /usr/local/bin
+LIBDEST_DIR = /usr/local/lib
+INCDEST_DIR = /usr/local/include
+
 
 $(shell touch $(SRCDIR)/generate_kickmap.cpp) # this is so that last compilation time always goes into executable
 $(shell touch $(SRCDIR)/tests.cpp) # this is so that last compilation time always goes into executable
@@ -104,13 +107,9 @@ $(OBJDIR)/libids.a: $(LIBOBJECTS)
 
 $(OBJDIR)/generate_kickmap: libids $(BINOBJECTS)
 	$(CXX) $(LDFLAGS) $(BINOBJECTS) $(OBJDIR)/libids.a $(LIBS) -o $@
-	-rm -rf $(BINDEST_DIR)/generate_kickmap
-	ln -srf $(OBJDIR)/generate_kickmap $(BINDEST_DIR)
 
 $(OBJDIR)/run_test: libids $(BINOBJECTS2)
 	$(CXX) $(LDFLAGS) $(BINOBJECTS2) $(OBJDIR)/libids.a $(LIBS) -o $@
-	-rm -rf $(BINDEST_DIR)/run_test
-	ln -srf $(OBJDIR)/run_test $(BINDEST_DIR)
 
 $(LIBOBJECTS): | $(OBJDIR)
 
@@ -121,13 +120,31 @@ $(BINOBJECTS2): | $(OBJDIR)
 $(OBJDIR):
 	mkdir $(OBJDIR)
 
+install: uninstall all
+	cp $(OBJDIR)/generate_kickmap $(BINDEST_DIR)
+	cp $(OBJDIR)/libids.a $(LIBDEST_DIR)
+
+develop: uninstall all
+	ln -srf $(OBJDIR)/generate_kickmap $(BINDEST_DIR)
+	ln -srf $(OBJDIR)/libids.a $(LIBDEST_DIR)
+
+$(BINDEST_DIR):
+	mkdir $(BINDEST_DIR)
+
+$(LIBDEST_DIR):
+	mkdir $(LIBDEST_DIR)
+
+$(INCDEST_DIR):
+	mkdir $(INCDEST_DIR)
+
 clean:
 	-rm -rf $(OBJDIR) run_test generate_kickmap .depend *.out *.dat *~ *.o *.a *.txt
+
+uninstall:
 	-rm -rf $(BINDEST_DIR)/generate_kickmap
-	-rm -rf $(BINDEST_DIR)/run_test
+	-rm -rf $(LIBDEST_DIR)/libids.a
 
 cleanall: clean
-
 
 #### RULES ####
 
