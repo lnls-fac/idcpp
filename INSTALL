@@ -1,0 +1,18 @@
+General instructions
+====================
+
+These general instructions will build the binary and library versions of
+insertion devices. Before starting, read the requirements
+in the sections below.
+
+REQUIREMENTS
+
+- a C++ compiler with C++11 support (tested with GCC 4.8)
+
+INSTRUCTIONS
+
+1. Compile with 'make all'.
+
+2. Install with 'make install'. The installation directory is
+$(DEST_DIR), with DEST_DIR=/usr/local/bin by default. Alternatively, install a
+symbolic link to the local compiled version with 'make develop'.
