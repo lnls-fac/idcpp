@@ -21,8 +21,10 @@ struct InputParameters{
   double rk_step;
   int nrpts_x;
   int nrpts_y;
-  double width;
-  double height;
+  double x_len;
+  double y_len;
+  double id_width;
+  double id_height;
 };
 
 void read_input_file(std::string input_filename, bool& status, InputParameters& inputs){
@@ -40,8 +42,10 @@ void read_input_file(std::string input_filename, bool& status, InputParameters& 
       getline(input_file, line);
       if (line.find("#")!=0 && !line.empty()) values.push_back(line);
     }
-    inputs.height               = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
-    inputs.width                = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
+    inputs.id_height            = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
+    inputs.id_width             = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
+    inputs.y_len                = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
+    inputs.x_len                = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
     inputs.nrpts_y              = std::atoi(values.back().c_str());          values.pop_back();
     inputs.nrpts_x              = std::atoi(values.back().c_str());          values.pop_back();
     inputs.rk_step              = std::atof(values.back().c_str());          values.pop_back();
@@ -76,15 +80,15 @@ void load_fieldmaps(InputParameters inputs, std::vector<FieldMap>& fieldmaps, bo
   }
 }
 
-void grid(int nrpts_x, int nrpts_y, double width, double height, std::vector<double>& x, std::vector<double>& y){
+void grid(int nrpts_x, int nrpts_y, double x_len, double y_len, std::vector<double>& x, std::vector<double>& y){
   if (nrpts_x > 1){
     for(int j = 0; j < nrpts_x; j+=1){
-      x.push_back(-width + j*(2.0*width/(double(nrpts_x) - 1.0)));
+      x.push_back(-x_len + j*(2.0*x_len/(double(nrpts_x) - 1.0)));
     }
   } else x.push_back(0);
   if (nrpts_y > 1){
     for(int i = 0; i < nrpts_y; i+=1){
-      y.push_back(- height + i*(2.0*height/(double(nrpts_y) - 1.0)));
+      y.push_back(- y_len + i*(2.0*y_len/(double(nrpts_y) - 1.0)));
     }
   } else y.push_back(0);
 }
@@ -133,7 +137,7 @@ void check_position(InputParameters inputs, Vector3D<> r, bool& inside){
   double ymax;
   double x = abs(r.x);
   double y = abs(r.y);
-  ymax = inputs.width + (inputs.width/inputs.height)*r.x;
+  ymax = inputs.id_width + (inputs.id_width/inputs.id_height)*r.x;
   inside = (y < ymax) ? true : false;
 }
 
@@ -254,7 +258,7 @@ void generate_kickmap(InputParameters inputs, bool& status){
     } else {
 
       std::vector<double> x_grid; std::vector<double> y_grid;
-      grid(inputs.nrpts_x, inputs.nrpts_y, inputs.width, inputs.height, x_grid, y_grid);
+      grid(inputs.nrpts_x, inputs.nrpts_y, inputs.x_len, inputs.y_len, x_grid, y_grid);
 
       double beta; double brho;
       calc_brho(inputs.energy, beta, brho);
