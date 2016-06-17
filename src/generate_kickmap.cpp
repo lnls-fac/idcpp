@@ -104,7 +104,7 @@ void newton_lorentz_equation(double alpha, Vector3D<> r, Vector3D<> p,  Vector3D
   dp_ds.z = - alpha * (p.x * b.y - p.y * b.x);
 }
 
-void get_interpolated_field3D(Vector3D<> r, std::vector<double> y, std::vector<double>& bx, std::vector<double>& by, std::vector<double>& bz, Vector3D<>& b){
+void get_interpolated_field(Vector3D<> r, std::vector<double> y, std::vector<double>& bx, std::vector<double>& by, std::vector<double>& bz, Vector3D<>& b){
   alglib::real_1d_array y_array;
   y_array.setcontent(y.size(), &y[0]);
 
@@ -195,7 +195,7 @@ void runge_kutta(InputParameters inputs, std::vector<FieldMap> fieldmaps, double
         f = fieldmaps[i].field(r);
         bx_vector.push_back(f.x); by_vector.push_back(f.y); bz_vector.push_back(f.z);
       }
-      get_interpolated_field3D(r, y_values, bx_vector, by_vector, bz_vector, b);
+      get_interpolated_field(r, y_values, bx_vector, by_vector, bz_vector, b);
       newton_lorentz_equation(alpha, r, p, b, kr1, kp1);
       r1 = r + (s_step/2.0)* kr1;
       p1 = p + (s_step/2.0)* kp1;
@@ -205,7 +205,7 @@ void runge_kutta(InputParameters inputs, std::vector<FieldMap> fieldmaps, double
         f = fieldmaps[i].field(r1);
         bx_vector.push_back(f.x); by_vector.push_back(f.y); bz_vector.push_back(f.z);
       }
-      get_interpolated_field3D(r1, y_values, bx_vector, by_vector, bz_vector, b1);
+      get_interpolated_field(r1, y_values, bx_vector, by_vector, bz_vector, b1);
       newton_lorentz_equation(alpha, r1, p1, b1, kr2, kp2);
       r2 = r + (s_step/2.0)* kr2;
       p2 = p + (s_step/2.0)* kp2;
@@ -215,7 +215,7 @@ void runge_kutta(InputParameters inputs, std::vector<FieldMap> fieldmaps, double
         f = fieldmaps[i].field(r2);
         bx_vector.push_back(f.x); by_vector.push_back(f.y); bz_vector.push_back(f.z);
       }
-      get_interpolated_field3D(r2, y_values, bx_vector, by_vector, bz_vector, b2);
+      get_interpolated_field(r2, y_values, bx_vector, by_vector, bz_vector, b2);
       newton_lorentz_equation(alpha, r2, p2, b2, kr3, kp3);
       r3 = r + s_step* kr3;
       p3 = p + s_step* kp3;
@@ -225,7 +225,7 @@ void runge_kutta(InputParameters inputs, std::vector<FieldMap> fieldmaps, double
         f = fieldmaps[i].field(r3);
         bx_vector.push_back(f.x); by_vector.push_back(f.y); bz_vector.push_back(f.z);
       }
-      get_interpolated_field3D(r3, y_values, bx_vector, by_vector, bz_vector, b3);
+      get_interpolated_field(r3, y_values, bx_vector, by_vector, bz_vector, b3);
       newton_lorentz_equation(alpha, r3, p3, b3, kr4, kp4);
 
       r = r + (s_step/6.0)*(kr1 + 2.0*kr2 + 2.0*kr3 + kr4);

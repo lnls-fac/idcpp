@@ -66,7 +66,7 @@ void FieldMap::read_fieldmap_from_file(const std::string& fname_, bool header, b
 		file >> word; std::string rotacao;		std::getline(file, rotacao);
 		std::getline(file, line);
 
-		this->physical_length = std::atof(comprimento.c_str())/1000.0;
+		try{ this->physical_length = std::atof(comprimento.c_str())/1000.0; } catch (...) {}
 
 	}
 

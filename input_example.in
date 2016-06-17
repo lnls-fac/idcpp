@@ -1,0 +1,50 @@
+# ==========================
+# generate_kickmap input file
+# Date: 2016-06-17
+# Accelerator Physics LNLS
+# ==========================
+
+# --- Summary ---
+#
+# This is the input file for generate_kickmap script.
+# This script reads fieldmaps (one for each y-plane) from a magnet model and calculates
+# the magnet kickmap. Cubic spline is used for interpolation of the magnetic field.
+# A Runge-kutta algorithm is used for the integration of the equations of motion.
+
+# --- Input parameters ---
+
+# full name of the fieldmap files
+
+/home/fieldmap.txt
+
+# Number of fieldmap files
+
+1
+
+# full name of the kickmap output file
+
+/home/kickmap.txt
+
+# beam energy [eV]
+
+3e9
+
+# Runge-Kutta step
+
+0.001
+
+# Number of points in the radial direction
+
+81
+
+# Number of points in the vertical direction
+
+17
+
+# ID width [mm]
+
+4
+
+# ID height [mm]
+
+4
