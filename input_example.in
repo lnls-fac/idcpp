@@ -13,25 +13,25 @@
 
 # --- Input parameters ---
 
-# full name of the fieldmap files
+# Name of the fieldmap files
 
-/home/fieldmap.txt
+fieldmap.txt
 
 # Number of fieldmap files
 
 1
 
-# full name of the kickmap output file
+# Name of the kickmap output file
 
-/home/kickmap.txt
+kickmap.txt
 
 # beam energy [eV]
 
 3e9
 
-# Runge-Kutta step
+# Runge-Kutta step [mm]
 
-0.001
+1.0
 
 # Number of points in the radial direction
 
@@ -41,10 +41,19 @@
 
 17
 
-# ID width [mm]
+# Maximum value of x in grid [mm]
 
-4
+4.0
 
-# ID height [mm]
+# Maximum value of y in grid [mm]
 
-4
+4.0
+
+# DELTA geometry parameters
+# ID aperture width [mm]
+
+4.0
+
+# ID aperture height [mm]
+
+4.0

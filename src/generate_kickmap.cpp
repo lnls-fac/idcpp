@@ -48,7 +48,7 @@ void read_input_file(std::string input_filename, bool& status, InputParameters& 
     inputs.x_len                = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
     inputs.nrpts_y              = std::atoi(values.back().c_str());          values.pop_back();
     inputs.nrpts_x              = std::atoi(values.back().c_str());          values.pop_back();
-    inputs.rk_step              = std::atof(values.back().c_str());          values.pop_back();
+    inputs.rk_step              = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
     inputs.energy               = std::atof(values.back().c_str());          values.pop_back();
     inputs.kickmap_filename     = values.back();                             values.pop_back();
     inputs.nr_fieldmaps         = std::atoi(values.back().c_str());          values.pop_back();
