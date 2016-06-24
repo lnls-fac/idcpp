@@ -19,8 +19,8 @@ struct InputParameters{
   double rkstep;
   int grid_nx;
   int grid_ny;
-  double grid_xmax;
-  double grid_ymax;
+  double grid_xwindow;
+  double grid_ywindow;
   std::string mask_shape;
   double mask_width;
   double mask_height;
@@ -60,11 +60,11 @@ void read_input_file(std::string input_filename, bool& status, InputParameters& 
     }
 
     if (status){
-      inputs.grid_ymax        = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
-      inputs.grid_xmax        = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
+      inputs.grid_ywindow     = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
+      inputs.grid_xwindow     = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
       inputs.grid_ny          = std::atoi(values.back().c_str());          values.pop_back();
       inputs.grid_nx          = std::atoi(values.back().c_str());          values.pop_back();
-      inputs.rkstep          = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
+      inputs.rkstep           = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
       inputs.energy           = std::atof(values.back().c_str());          values.pop_back();
       inputs.kickmap_filename = values.back();                             values.pop_back();
       for (int i=0; i< inputs.nr_fieldmaps; i+=1) {
@@ -120,7 +120,7 @@ int main(int argc, char ** argv) {
     std::vector<FieldMap> fieldmaps;
     load_fieldmaps(inputs.fieldmap_filenames, fieldmaps, status);
 
-    Grid grid(inputs.grid_nx, inputs.grid_ny, inputs.grid_xmax, inputs.grid_ymax);
+    Grid grid(inputs.grid_nx, inputs.grid_ny, (inputs.grid_xwindow/2.0), (inputs.grid_ywindow/2.0));
 
     Mask mask;
     if (inputs.mask_shape_in_file){ mask.load(inputs.mask_filename); }

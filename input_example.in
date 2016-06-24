@@ -40,11 +40,11 @@ kickmap.txt
 # Number of points in the vertical direction:
 17
 
-# Maximum value of x in grid [mm]:
-4.0
+# Horizontal window [mm]:
+8.0
 
-# Maximum value of y in grid [mm]:
-4.0
+# Vertical window [mm]:
+8.0
 
 
 # --- Insertion device geometry parameters ---
