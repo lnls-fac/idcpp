@@ -51,10 +51,17 @@ LIBSOURCES_CPP =  ap.cpp \
 									solvers.cpp \
 									specialfunctions.cpp \
 									fieldmap.cpp \
+									rungekutta.cpp \
+									grid.cpp \
+									mask.cpp \
+									kickmap.cpp \
 
 BINSOURCES_CPP =	generate_kickmap.cpp
 
 BINSOURCES_CPP2 =	tests.cpp
+
+BINSOURCES_CPP3 =	fieldmap_extrapolation.cpp
+
 
 AUXFILES  = VERSION
 
@@ -69,8 +76,8 @@ INCDEST_DIR = /usr/local/include
 
 
 $(shell touch $(SRCDIR)/generate_kickmap.cpp) # this is so that last compilation time always goes into executable
-$(shell touch $(SRCDIR)/tests.cpp) # this is so that last compilation time always goes into executable
-
+$(shell touch $(SRCDIR)/tests.cpp)
+$(shell touch $(SRCDIR)/fieldmap_extrapolation.cpp)
 
 ifeq ($(MAKECMDGOALS),insertion_devices-debug)
   CFLAGS    = $(MACHINE) $(DBG_FLAG) $(DFLAGS) -pthread
@@ -81,6 +88,7 @@ endif
 LIBOBJECTS  = $(addprefix $(OBJDIR)/, $(LIBSOURCES_CPP:.cpp=.o))
 BINOBJECTS  = $(addprefix $(OBJDIR)/, $(BINSOURCES_CPP:.cpp=.o))
 BINOBJECTS2 = $(addprefix $(OBJDIR)/, $(BINSOURCES_CPP2:.cpp=.o))
+BINOBJECTS3 = $(addprefix $(OBJDIR)/, $(BINSOURCES_CPP3:.cpp=.o))
 LDFLAGS    = $(MACHINE)
 
 
@@ -88,28 +96,36 @@ LDFLAGS    = $(MACHINE)
 
 #### TARGETS ####
 
-all: libids generate_kickmap
+all: libids lnls-generate-kickmap
 
 test: libids run_test
 
+extrapolation: libids fieldmap_extrapolation
+
 #### GENERATES DEPENDENCY FILE ####
-$(shell $(CXX) -MM $(CFLAGS) $(addprefix $(SRCDIR)/, $(LIBSOURCES_CPP)) $(addprefix $(SRCDIR)/, $(BINSOURCES_CPP2)) $(addprefix $(SRCDIR)/, $(BINSOURCES_CPP)) | sed 's/.*\.o/$(OBJDIR)\/&/' > .depend)
+$(shell $(CXX) -MM $(CFLAGS) $(addprefix $(SRCDIR)/, $(LIBSOURCES_CPP)) $(addprefix $(SRCDIR)/, $(BINSOURCES_CPP3)) $(addprefix $(SRCDIR)/, $(BINSOURCES_CPP2)) $(addprefix $(SRCDIR)/, $(BINSOURCES_CPP)) | sed 's/.*\.o/$(OBJDIR)\/&/' > .depend)
 -include .depend
 
-generate_kickmap: $(OBJDIR)/generate_kickmap
+lnls-generate-kickmap: $(OBJDIR)/lnls-generate-kickmap
 
 run_test: $(OBJDIR)/run_test
+
+fieldmap_extrapolation: $(OBJDIR)/fieldmap_extrapolation
 
 libids: $(OBJDIR)/libids.a
 
 $(OBJDIR)/libids.a: $(LIBOBJECTS)
 	$(AR) $(ARFLAGS) $@ $^
 
-$(OBJDIR)/generate_kickmap: libids $(BINOBJECTS)
+$(OBJDIR)/lnls-generate-kickmap: libids $(BINOBJECTS)
 	$(CXX) $(LDFLAGS) $(BINOBJECTS) $(OBJDIR)/libids.a $(LIBS) -o $@
 
 $(OBJDIR)/run_test: libids $(BINOBJECTS2)
 	$(CXX) $(LDFLAGS) $(BINOBJECTS2) $(OBJDIR)/libids.a $(LIBS) -o $@
+
+$(OBJDIR)/fieldmap_extrapolation: libids $(BINOBJECTS3)
+	$(CXX) $(LDFLAGS) $(BINOBJECTS3) $(OBJDIR)/libids.a $(LIBS) -o $@
+
 
 $(LIBOBJECTS): | $(OBJDIR)
 
@@ -117,15 +133,17 @@ $(BINOBJECTS): | $(OBJDIR)
 
 $(BINOBJECTS2): | $(OBJDIR)
 
+$(BINOBJECTS3): | $(OBJDIR)
+
 $(OBJDIR):
 	mkdir $(OBJDIR)
 
 install: uninstall all
-	cp $(OBJDIR)/generate_kickmap $(BINDEST_DIR)
+	cp $(OBJDIR)/lnls-generate-kickmap $(BINDEST_DIR)
 	cp $(OBJDIR)/libids.a $(LIBDEST_DIR)
 
 develop: uninstall all
-	ln -srf $(OBJDIR)/generate_kickmap $(BINDEST_DIR)
+	ln -srf $(OBJDIR)/lnls-generate-kickmap $(BINDEST_DIR)
 	ln -srf $(OBJDIR)/libids.a $(LIBDEST_DIR)
 
 $(BINDEST_DIR):
@@ -138,10 +156,10 @@ $(INCDEST_DIR):
 	mkdir $(INCDEST_DIR)
 
 clean:
-	-rm -rf $(OBJDIR) run_test generate_kickmap .depend *.out *.dat *~ *.o *.a *.txt
+	-rm -rf $(OBJDIR) run_test lnls-generate-kickmap fieldmap_extrapolation .depend *.out *.dat *~ *.o *.a *.txt
 
 uninstall:
-	-rm -rf $(BINDEST_DIR)/generate_kickmap
+	-rm -rf $(BINDEST_DIR)/lnls-generate-kickmap
 	-rm -rf $(LIBDEST_DIR)/libids.a
 
 cleanall: clean

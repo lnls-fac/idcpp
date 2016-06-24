@@ -1,59 +1,59 @@
 # ==========================
-# generate_kickmap input file
-# Date: 2016-06-17
+# lnls-generate-kickmap input file
+# Date: 2016-06-24
 # Accelerator Physics LNLS
 # ==========================
 
 # --- Summary ---
 #
-# This is the input file for generate_kickmap script.
+# This is the input file for lnls-generate-kickmap script.
 # This script reads fieldmaps (one for each y-plane) from a magnet model and calculates
 # the magnet kickmap. Cubic spline is used for interpolation of the magnetic field.
-# A Runge-kutta algorithm is used for the integration of the equations of motion.
+# A Runge-Kutta algorithm is used for the integration of the equations of motion.
 
-# --- Input parameters ---
+# --- Input and Output files ---
 
-# Name of the fieldmap files
-
-fieldmap.txt
-
-# Number of fieldmap files
-
+# Number of fieldmap files:
 1
 
-# Name of the kickmap output file
+# Name of the fieldmap files:
+fieldmap.txt
 
+# Name of the kickmap output file:
 kickmap.txt
 
-# beam energy [eV]
 
+# --- Beam energy and step of Runge-Kutta algorithm --
+
+# beam energy [eV]:
 3e9
 
-# Runge-Kutta step [mm]
-
+# Runge-Kutta step [mm]:
 1.0
 
-# Number of points in the radial direction
 
+# --- Particle distribution parameters ---
+
+# Number of points in the radial direction:
 81
 
-# Number of points in the vertical direction
-
+# Number of points in the vertical direction:
 17
 
-# Maximum value of x in grid [mm]
-
+# Maximum value of x in grid [mm]:
 4.0
 
-# Maximum value of y in grid [mm]
-
+# Maximum value of y in grid [mm]:
 4.0
 
-# DELTA geometry parameters
-# ID aperture width [mm]
 
-4.0
+# --- Insertion device geometry parameters ---
 
-# ID aperture height [mm]
+# ID aperture shape:
+diamond
 
-4.0
+# ID aperture width [mm]:
+8.0
+
+# ID aperture height [mm]:
+8.0
