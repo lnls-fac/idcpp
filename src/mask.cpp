@@ -58,8 +58,13 @@ void Mask::load(std::string filename){
   while (true) {
     file >> x_value >> y_value;
     if (file.eof()) break;
-    x.push_back(double(x_value));
-    y.push_back(double(y_value));
+    if (x.size() >= 1){
+      // Avoid alglib error
+      if (x.back() == (x_value/1000.0)){ x_value += 1e-10; }
+      if (y.back() == (y_value/1000.0)){ y_value += 1e-10; }
+    }
+    x.push_back(double(x_value)/1000.0);
+    y.push_back(double(y_value)/1000.0);
   }
   file.close();
 
@@ -73,6 +78,11 @@ void Mask::load(std::string filename){
 void Mask::calc_interpolant(){
   alglib::real_1d_array x_array;
   alglib::real_1d_array y_array;
+
+  for (int i=0; i < this->x.size(); i+=1 ){
+    std::cout << this->x[i] << " " << this->y[i] << std::endl;
+  }
+
   x_array.setcontent(this->x.size(), &this->x[0]);
   y_array.setcontent(this->y.size(), &this->y[0]);
 
