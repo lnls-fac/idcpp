@@ -40,12 +40,17 @@ kickmap.txt
 # Number of points in the vertical direction:
 17
 
-# Horizontal window [mm]:
-8.0
+# Minimum value of x [mm]:
+-4.0
 
-# Vertical window [mm]:
-8.0
+# Maximum value of x [mm]:
+4.0
 
+# Minimum value of y [mm]:
+-4.0
+
+# Maximum value of y [mm]:
+4.0
 
 # --- Insertion device geometry parameters ---
 
