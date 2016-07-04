@@ -179,3 +179,13 @@ Vector3D<double> FieldMap::field(const Vector3D<double>& pos) const{
 	return Vector3D<double>(field[0], field[1], field[2]);
 
 }
+
+std::vector<Vector3D<double> > FieldMap::field(const std::vector<Vector3D<double> >& pos) const{
+
+	std::vector<Vector3D<> > field;
+  for (int i=0; i < pos.size(); i+=1){
+    field.push_back(this->field(pos[i]));
+  }
+  return field;
+
+}

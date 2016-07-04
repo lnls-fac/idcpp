@@ -85,8 +85,10 @@ public:
 	FieldMap(const std::string& fname_, size_t id_ = 0);
 	FieldMap(const FieldMap &obj);
 
-	size_t           getid() const { return this->id; }
 	Vector3D<double> field(const Vector3D<double>& pos) const;
+	std::vector<Vector3D<double> > field(const std::vector<Vector3D<double> >& pos) const;
+
+	size_t           getid() const { return this->id; }
 	void             delete_data();
 	void 						 change_y_sign();
 
@@ -103,6 +105,10 @@ class FieldMapContainer {
 public:
 
   int nr_fieldmaps;
+	double x_min;
+	double x_max;
+	double y_min;
+	double y_max;
 	double z_min;
 	double z_max;
 	double physical_length;
@@ -112,8 +118,8 @@ public:
 	FieldMapContainer(std::vector<FieldMap> fieldmaps);
   FieldMapContainer(std::vector<std::string> fieldmap_filenames, bool use_field_simmetry = false);
 
-	Vector3D<double> field(Vector3D<> r) const;
-	std::vector<Vector3D<double> > field(std::vector<Vector3D<> > position) const;
+	Vector3D<double> field(const Vector3D<double>& pos) const;
+	std::vector<Vector3D<double> > field(const std::vector<Vector3D<double> >& pos) const;
 
 private:
 

@@ -31,7 +31,6 @@ FieldMapContainer::FieldMapContainer(std::vector<std::string> fieldmap_filenames
         nr_fieldmaps +=1;
       }
 
-      fieldmap.delete_data();
     }
     catch(FieldMapException::type e){
       if (e == 1) { std::cout << "File not found: " << filename << std::endl << std::endl; }
@@ -52,25 +51,35 @@ FieldMapContainer::FieldMapContainer(FieldMap fieldmap){
 }
 
 void FieldMapContainer::set_attributes(){
+  this->nr_fieldmaps = this->fieldmaps.size();
+  std::vector<double> x_min_vector;
+  std::vector<double> x_max_vector;
+  std::vector<double> y_vector;
   std::vector<double> z_min_vector;
   std::vector<double> z_max_vector;
   for(int i=0; i < this->nr_fieldmaps; i+=1) {
+    x_min_vector.push_back(this->fieldmaps[i].x_min);
+    x_max_vector.push_back(this->fieldmaps[i].x_max);
+    y_vector.push_back(this->fieldmaps[i].y);
     z_min_vector.push_back(this->fieldmaps[i].z_min);
     z_max_vector.push_back(this->fieldmaps[i].z_max);
   }
-  this->nr_fieldmaps = this->fieldmaps.size();
+  this->x_min = *std::min_element(x_min_vector.begin(), x_min_vector.end());
+  this->x_max = *std::max_element(x_max_vector.begin(), x_max_vector.end());
+  this->y_min = *std::min_element(y_vector.begin(), y_vector.end());
+  this->y_max = *std::max_element(y_vector.begin(), y_vector.end());
   this->z_min = *std::min_element(z_min_vector.begin(), z_min_vector.end());
-  this->z_max = *std::min_element(z_max_vector.begin(), z_max_vector.end());
+  this->z_max = *std::max_element(z_max_vector.begin(), z_max_vector.end());
   this->physical_length = this->fieldmaps[0].physical_length;
 }
 
-Vector3D<double> FieldMapContainer::field(Vector3D<> position) const{
+Vector3D<double> FieldMapContainer::field(const Vector3D<>& pos) const{
 
   Vector3D<> field;
 
   if (this->nr_fieldmaps == 1){
 
-    field = this->fieldmaps[0].field(position);
+    field = this->fieldmaps[0].field(pos);
 
   } else {
 
@@ -81,7 +90,7 @@ Vector3D<double> FieldMapContainer::field(Vector3D<> position) const{
     std::vector<double> bz_vector;
 
     for(int i=0; i < this->fieldmaps.size(); i+=1){
-      f = this->fieldmaps[i].field(position);
+      f = this->fieldmaps[i].field(pos);
       y_vector.push_back(this->fieldmaps[i].y);
       bx_vector.push_back(f.x);
       by_vector.push_back(f.y);
@@ -104,20 +113,20 @@ Vector3D<double> FieldMapContainer::field(Vector3D<> position) const{
     alglib::spline1dbuildcubic(y_array, by_array, interpolant_y);
     alglib::spline1dbuildcubic(y_array, bz_array, interpolant_z);
 
-    field.x = alglib::spline1dcalc(interpolant_x, position.y);
-    field.y = alglib::spline1dcalc(interpolant_y, position.y);
-    field.z = alglib::spline1dcalc(interpolant_z, position.y);
+    field.x = alglib::spline1dcalc(interpolant_x, pos.y);
+    field.y = alglib::spline1dcalc(interpolant_y, pos.y);
+    field.z = alglib::spline1dcalc(interpolant_z, pos.y);
   }
 
   return field;
 
 }
 
-std::vector<Vector3D<double> > FieldMapContainer::field(std::vector<Vector3D<> > position) const{
+std::vector<Vector3D<double> > FieldMapContainer::field(const std::vector<Vector3D<> >& pos) const{
 
   std::vector<Vector3D<> > field;
-  for (int i=0; i < position.size(); i+=1){
-    field.push_back(this->field(position[i]));
+  for (int i=0; i < pos.size(); i+=1){
+    field.push_back(this->field(pos[i]));
   }
   return field;
 

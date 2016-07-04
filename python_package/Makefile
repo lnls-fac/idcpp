@@ -5,11 +5,13 @@ IDDIR   = insertion_devices
 .NOTPARALLEL:
 
 install:
+	rm -f $(IDDIR)/VERSION
 	cp $(SWIGDIR)/__init__.py $(IDDIR)
 	ln -s -r VERSION $(IDDIR)
 	$(PYTHON) setup.py install
 
 develop:
+	rm -f $(IDDIR)/VERSION
 	cp $(SWIGDIR)/__init__.py $(IDDIR)
 	ln -s -r VERSION $(IDDIR)
 	$(PYTHON) setup.py develop
