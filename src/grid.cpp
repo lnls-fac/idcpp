@@ -1,8 +1,6 @@
 #include <vector>
 #include <api.h>
 
-struct GridException { enum type { inconsistent_dimensions = 0,}; };
-
 Grid::Grid(int nx, int ny, double x_max, double y_max){
   //symmetrical grid
 

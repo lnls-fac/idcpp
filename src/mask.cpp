@@ -9,10 +9,6 @@
 #include <interpolation.h>
 #include <api.h>
 
-struct MaskException {
-  enum type { file_not_found = 0, undefined_shape = 1 };
-};
-
 enum Shape{ SQUARE, RECTANGLE, DIAMOND, CIRCLE, ELLIPSE, TABLE };
 std::map<std::string, Shape> shapes;
 
@@ -78,10 +74,6 @@ void Mask::load(std::string filename){
 void Mask::calc_interpolant(){
   alglib::real_1d_array x_array;
   alglib::real_1d_array y_array;
-
-  for (int i=0; i < this->x.size(); i+=1 ){
-    std::cout << this->x[i] << " " << this->y[i] << std::endl;
-  }
 
   x_array.setcontent(this->x.size(), &this->x[0]);
   y_array.setcontent(this->y.size(), &this->y[0]);

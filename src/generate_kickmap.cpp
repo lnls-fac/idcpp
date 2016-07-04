@@ -8,7 +8,6 @@
 #include <set>
 #include <algorithm>
 #include <stdlib.h>
-#include <fieldmap.h>
 #include <api.h>
 
 struct InputParameters{
@@ -62,62 +61,40 @@ void read_input_file(std::string input_filename, bool& status, InputParameters& 
     }
 
     if (status){
-      inputs.grid_ymax        = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
-      inputs.grid_ymin        = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
-      inputs.grid_xmax        = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
-      inputs.grid_xmin        = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
-      inputs.grid_ny          = std::atoi(values.back().c_str());          values.pop_back();
-      inputs.grid_nx          = std::atoi(values.back().c_str());          values.pop_back();
-      inputs.rkstep           = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
-      inputs.energy           = std::atof(values.back().c_str());          values.pop_back();
-      inputs.kickmap_filename = values.back();                             values.pop_back();
+      inputs.grid_ymax          = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
+      inputs.grid_ymin          = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
+      inputs.grid_xmax          = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
+      inputs.grid_xmin          = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
+      inputs.grid_ny            = std::atoi(values.back().c_str());          values.pop_back();
+      inputs.grid_nx            = std::atoi(values.back().c_str());          values.pop_back();
+      inputs.rkstep             = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
+      inputs.energy             = std::atof(values.back().c_str());          values.pop_back();
+      inputs.kickmap_filename   = values.back();                             values.pop_back();
       for (int i=0; i< inputs.nr_fieldmaps; i+=1) {
         inputs.fieldmap_filenames.push_back(values.back()); values.pop_back();
       }
     }
 
-    // std::cout << std::endl;
-    // std::cout << "Inputs:" << std::endl;
-    // std::cout << "Number of fieldmaps:  " << inputs.nr_fieldmaps << std::endl;
-    // std::cout << "Fieldmap filenames:   " << std::endl;
-    // for (int i=0; i< inputs.nr_fieldmaps; i+=1) { std::cout << "  " << inputs.fieldmap_filenames[i] << std::endl; }
-    // std::cout << "Kickmap filename:     " << inputs.kickmap_filename << std::endl;
-    // std::cout << "Energy:               " << inputs.energy << std::endl;
-    // std::cout << "Runge-kutta step      " << inputs.rkstep << std::endl;
-    // std::cout << "Grid nx:              " << inputs.grid_nx << std::endl;
-    // std::cout << "Grid ny:              " << inputs.grid_ny << std::endl;
-    // std::cout << "Grid xmin:            " << inputs.grid_xmin << std::endl;
-    // std::cout << "Grid xmax:            " << inputs.grid_xmax << std::endl;
-    // std::cout << "Grid ymin:            " << inputs.grid_ymin << std::endl;
-    // std::cout << "Grid ymax:            " << inputs.grid_ymax << std::endl;
-    // std::cout << "Mask shape:           " << inputs.mask_shape << std::endl;
-    // std::cout << "Mask width:           " << inputs.mask_width << std::endl;
-    // std::cout << "Mask height:          " << inputs.mask_height << std::endl;
-    // std::cout << "Mask filename:        " << inputs.mask_filename << std::endl;
-    // std::cout << std::endl;
-
-  }
-}
-
-void load_fieldmaps(std::vector<std::string> fieldmap_filenames, std::vector<FieldMap>& fieldmaps, bool& status){
-  std::cout << std::endl;
-  std::cout << "Loading fieldmap files..." << std::endl;
-  std::string filename;
-
-  int nr_fieldmaps = fieldmap_filenames.size();
-  try{
-    for(int i=0; i < nr_fieldmaps; i+=1){
-      filename = fieldmap_filenames.back();
-      fieldmap_filenames.pop_back();
-      FieldMap fieldmap(filename.c_str());
-      fieldmaps.push_back(fieldmap);
-      std::cout << "Load " << filename << std::endl;
-      status = true;
-    }
-  } catch (...){
-    std::cout << "Can't open fieldmap file: " << filename << std::endl;
     std::cout << std::endl;
-    status = false;
+    std::cout << "Inputs:" << std::endl;
+    std::cout << "Number of fieldmaps:  " << inputs.nr_fieldmaps << std::endl;
+    std::cout << "Fieldmap filenames:   " << std::endl;
+    for (int i=0; i< inputs.nr_fieldmaps; i+=1) { std::cout << "  " << inputs.fieldmap_filenames[i] << std::endl; }
+    std::cout << "Kickmap filename:     " << std::endl <<  "  " << inputs.kickmap_filename << std::endl;
+    std::cout << "Energy:               " << inputs.energy << std::endl;
+    std::cout << "Runge-kutta step      " << inputs.rkstep << std::endl;
+    std::cout << "Grid nx:              " << inputs.grid_nx << std::endl;
+    std::cout << "Grid ny:              " << inputs.grid_ny << std::endl;
+    std::cout << "Grid xmin:            " << inputs.grid_xmin << std::endl;
+    std::cout << "Grid xmax:            " << inputs.grid_xmax << std::endl;
+    std::cout << "Grid ymin:            " << inputs.grid_ymin << std::endl;
+    std::cout << "Grid ymax:            " << inputs.grid_ymax << std::endl;
+    std::cout << "Mask shape:           " << inputs.mask_shape << std::endl;
+    std::cout << "Mask width:           " << inputs.mask_width << std::endl;
+    std::cout << "Mask height:          " << inputs.mask_height << std::endl;
+    std::cout << "Mask filename:        " << inputs.mask_filename << std::endl;
+    std::cout << std::endl;
+
   }
 }
 
@@ -141,23 +118,18 @@ int main(int argc, char ** argv) {
 
   if (status){
 
-    std::vector<FieldMap> fieldmaps;
-    load_fieldmaps(inputs.fieldmap_filenames, fieldmaps, status);
+    bool use_field_simmetry = true;
+    FieldMapContainer fieldmaps(inputs.fieldmap_filenames, use_field_simmetry);
 
-    if (status){
-      Grid grid(inputs.grid_nx, inputs.grid_ny, inputs.grid_xmin, inputs.grid_xmax, inputs.grid_ymin, inputs.grid_ymax);
+    Grid grid(inputs.grid_nx, inputs.grid_ny, inputs.grid_xmin, inputs.grid_xmax, inputs.grid_ymin, inputs.grid_ymax);
 
-      Mask mask;
-      if (inputs.mask_shape_in_file){ mask.load(inputs.mask_filename); }
-      else { mask.load(inputs.mask_shape, inputs.mask_width, inputs.mask_height); }
+    Mask mask;
+    if (inputs.mask_shape_in_file){ mask.load(inputs.mask_filename); }
+    else { mask.load(inputs.mask_shape, inputs.mask_width, inputs.mask_height); }
 
-      KickMap kickmap(fieldmaps, grid, mask, inputs.energy, inputs.rkstep);
-      kickmap.write_kickmap(inputs.kickmap_filename);
-    }
+    KickMap kickmap(fieldmaps, grid, mask, inputs.energy, inputs.rkstep);
+    kickmap.write_kickmap(inputs.kickmap_filename);
 
-  }
-
-  if (status){
     clock_gettime(CLOCK_MONOTONIC, &finish);
     elapsed = (finish.tv_sec - start.tv_sec);
     elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;

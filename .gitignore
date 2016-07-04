@@ -1,6 +1,10 @@
-fieldmaps/*
 *~
 build/*
-kickmaps/*
 *.depend
 input_files/*
+python_package/build/*
+python_package/dist/*
+python_package/insertion_devices/*
+python_package/insertion_devices.egg-info/*
+python_package/swig/*.py
+python_package/swig/*.cxx

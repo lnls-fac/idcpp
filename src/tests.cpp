@@ -7,8 +7,8 @@
 #include <ctime>
 #include <set>
 #include <algorithm>
-#include <fieldmap.h>
 #include <stdlib.h>
+#include <api.h>
 
 static const double electron_rest_energy = 510998.92811;  // [eV]
 static const double light_speed          = 299792458;     // [m/s]

@@ -40,6 +40,18 @@ OPT_FLAG    = -O3 -std=c++11 -fPIC
 DBG_FLAG    = -O0 -g3 -std=c++11 -fPIC
 ARFLAGS     = rcs
 DFLAGS      = -DVERSION=$(VERSION)
+PYTHON      = python3
+
+INCDIR  = include
+SRCDIR  = src
+OBJDIR  = build
+TGTDIR  = release
+SWIGDIR = swig
+PKGDIR  = python_package
+PKGIDDIR = insertion_devices
+BINDEST_DIR = /usr/local/bin
+LIBDEST_DIR = /usr/local/lib
+INCDEST_DIR = /usr/local/include
 
 LIBSOURCES_CPP =  ap.cpp \
 									alglibinternal.cpp \
@@ -51,6 +63,7 @@ LIBSOURCES_CPP =  ap.cpp \
 									solvers.cpp \
 									specialfunctions.cpp \
 									fieldmap.cpp \
+									fieldmapcontainer.cpp \
 									rungekutta.cpp \
 									grid.cpp \
 									mask.cpp \
@@ -60,24 +73,13 @@ BINSOURCES_CPP =	generate_kickmap.cpp
 
 BINSOURCES_CPP2 =	tests.cpp
 
-BINSOURCES_CPP3 =	fieldmap_extrapolation.cpp
-
-
 AUXFILES  = VERSION
 
 LIBS = -lm
-INC  = -I./include
-
-OBJDIR = build
-SRCDIR = src
-BINDEST_DIR = /usr/local/bin
-LIBDEST_DIR = /usr/local/lib
-INCDEST_DIR = /usr/local/include
-
+INC  = -I./$(INCDIR) -I/usr/include/python3.4
 
 $(shell touch $(SRCDIR)/generate_kickmap.cpp) # this is so that last compilation time always goes into executable
 $(shell touch $(SRCDIR)/tests.cpp)
-$(shell touch $(SRCDIR)/fieldmap_extrapolation.cpp)
 
 ifeq ($(MAKECMDGOALS),insertion_devices-debug)
   CFLAGS    = $(MACHINE) $(DBG_FLAG) $(DFLAGS) -pthread
@@ -85,10 +87,10 @@ else
   CFLAGS    = $(MACHINE) $(OPT_FLAG) $(DFLAGS) -pthread
 endif
 
-LIBOBJECTS  = $(addprefix $(OBJDIR)/, $(LIBSOURCES_CPP:.cpp=.o))
-BINOBJECTS  = $(addprefix $(OBJDIR)/, $(BINSOURCES_CPP:.cpp=.o))
-BINOBJECTS2 = $(addprefix $(OBJDIR)/, $(BINSOURCES_CPP2:.cpp=.o))
-BINOBJECTS3 = $(addprefix $(OBJDIR)/, $(BINSOURCES_CPP3:.cpp=.o))
+
+LIBOBJECTS  = $(addprefix $(OBJDIR)/$(TGTDIR)/, $(LIBSOURCES_CPP:.cpp=.o))
+BINOBJECTS  = $(addprefix $(OBJDIR)/$(TGTDIR)/, $(BINSOURCES_CPP:.cpp=.o))
+BINOBJECTS2 = $(addprefix $(OBJDIR)/$(TGTDIR)/, $(BINSOURCES_CPP2:.cpp=.o))
 LDFLAGS    = $(MACHINE)
 
 
@@ -96,55 +98,57 @@ LDFLAGS    = $(MACHINE)
 
 #### TARGETS ####
 
-all: libids lnls-generate-kickmap
+all: libids lnls-generate-kickmap python_package
+
+python_package: $(PKGDIR)/$(PKGIDDIR)/insertion_devices.py $(PKGDIR)/$(PKGIDDIR)/_insertion_devices.so
 
 test: libids run_test
 
-extrapolation: libids fieldmap_extrapolation
-
 #### GENERATES DEPENDENCY FILE ####
-$(shell $(CXX) -MM $(CFLAGS) $(addprefix $(SRCDIR)/, $(LIBSOURCES_CPP)) $(addprefix $(SRCDIR)/, $(BINSOURCES_CPP3)) $(addprefix $(SRCDIR)/, $(BINSOURCES_CPP2)) $(addprefix $(SRCDIR)/, $(BINSOURCES_CPP)) | sed 's/.*\.o/$(OBJDIR)\/&/' > .depend)
+$(shell $(CXX) -MM $(CFLAGS) $(addprefix $(SRCDIR)/, $(LIBSOURCES_CPP)) $(addprefix $(SRCDIR)/, $(BINSOURCES_CPP2)) $(addprefix $(SRCDIR)/, $(BINSOURCES_CPP)) | sed 's/.*\.o/$(OBJDIR)\/$(TGTDIR)\/&/' > .depend)
 -include .depend
 
-lnls-generate-kickmap: $(OBJDIR)/lnls-generate-kickmap
+lnls-generate-kickmap: $(OBJDIR)/$(TGTDIR)/lnls-generate-kickmap
 
-run_test: $(OBJDIR)/run_test
+run_test: $(OBJDIR)/$(TGTDIR)/run_test
 
-fieldmap_extrapolation: $(OBJDIR)/fieldmap_extrapolation
+libids: $(OBJDIR)/$(TGTDIR)/libids.a
 
-libids: $(OBJDIR)/libids.a
-
-$(OBJDIR)/libids.a: $(LIBOBJECTS)
+$(OBJDIR)/$(TGTDIR)/libids.a: $(LIBOBJECTS)
 	$(AR) $(ARFLAGS) $@ $^
 
-$(OBJDIR)/lnls-generate-kickmap: libids $(BINOBJECTS)
-	$(CXX) $(LDFLAGS) $(BINOBJECTS) $(OBJDIR)/libids.a $(LIBS) -o $@
+$(OBJDIR)/$(TGTDIR)/lnls-generate-kickmap: libids $(BINOBJECTS)
+	$(CXX) $(LDFLAGS) $(BINOBJECTS) $(OBJDIR)/$(TGTDIR)/libids.a $(LIBS) -o $@
 
-$(OBJDIR)/run_test: libids $(BINOBJECTS2)
-	$(CXX) $(LDFLAGS) $(BINOBJECTS2) $(OBJDIR)/libids.a $(LIBS) -o $@
+$(OBJDIR)/$(TGTDIR)/run_test: libids $(BINOBJECTS2)
+	$(CXX) $(LDFLAGS) $(BINOBJECTS2) $(OBJDIR)/$(TGTDIR)/libids.a $(LIBS) -o $@
 
-$(OBJDIR)/fieldmap_extrapolation: libids $(BINOBJECTS3)
-	$(CXX) $(LDFLAGS) $(BINOBJECTS3) $(OBJDIR)/libids.a $(LIBS) -o $@
+$(PKGDIR)/$(PKGIDDIR)/insertion_devices.py: $(PKGDIR)/$(SWIGDIR)/insertion_devices.py | $(PKGDIR)/$(PKGIDDIR)
+	cp $(PKGDIR)/$(SWIGDIR)/insertion_devices.py $(PKGDIR)/$(PKGIDDIR)
 
+$(PKGDIR)/$(PKGIDDIR)/_insertion_devices.so: libids $(OBJDIR)/$(TGTDIR)/libinsertion_devices.so | $(PKGDIR)/$(PKGIDDIR)
+	cp $(OBJDIR)/$(TGTDIR)/libinsertion_devices.so $(PKGDIR)/$(PKGIDDIR)/_insertion_devices.so
 
-$(LIBOBJECTS): | $(OBJDIR)
+$(OBJDIR)/$(TGTDIR)/libinsertion_devices.so: $(OBJDIR)/$(TGTDIR)/insertion_devices_wrap.o $(LIBOBJECTS) | $(OBJDIR)/$(TGTDIR)
+	$(CXX) -shared $(LDFLAGS) $(LIBOBJECTS)  $(OBJDIR)/$(TGTDIR)/insertion_devices_wrap.o $(LIBS) -o $@
 
-$(BINOBJECTS): | $(OBJDIR)
+$(OBJDIR)/$(TGTDIR)/insertion_devices_wrap.o: $(PKGDIR)/$(SWIGDIR)/insertion_devices_wrap.cxx | $(OBJDIR)/$(TGTDIR)
+	$(CXX) -c $(CFLAGS) $(INC) $< -o $@
 
-$(BINOBJECTS2): | $(OBJDIR)
+$(PKGDIR)/$(SWIGDIR)/insertion_devices.py $(PKGDIR)/$(SWIGDIR)/insertion_devices_wrap.cxx: $(PKGDIR)/$(SWIGDIR)/insertion_devices.i $(LIBOBJECTS)
+	swig -c++ -python $(INC) $(PKGDIR)/$(SWIGDIR)/insertion_devices.i
 
-$(BINOBJECTS3): | $(OBJDIR)
+$(LIBOBJECTS): | $(OBJDIR)/$(TGTDIR)
 
-$(OBJDIR):
-	mkdir $(OBJDIR)
+$(BINOBJECTS): | $(OBJDIR)/$(TGTDIR)
 
-install: uninstall all
-	cp $(OBJDIR)/lnls-generate-kickmap $(BINDEST_DIR)
-	cp $(OBJDIR)/libids.a $(LIBDEST_DIR)
+$(BINOBJECTS2): | $(OBJDIR)/$(TGTDIR)
 
-develop: uninstall all
-	ln -srf $(OBJDIR)/lnls-generate-kickmap $(BINDEST_DIR)
-	ln -srf $(OBJDIR)/libids.a $(LIBDEST_DIR)
+$(PKGDIR)/$(PKGIDDIR):
+	mkdir -p $(PKGDIR)/$(PKGIDDIR)
+
+$(OBJDIR)/$(TGTDIR):
+	mkdir -p $(OBJDIR)/$(TGTDIR)
 
 $(BINDEST_DIR):
 	mkdir $(BINDEST_DIR)
@@ -155,8 +159,19 @@ $(LIBDEST_DIR):
 $(INCDEST_DIR):
 	mkdir $(INCDEST_DIR)
 
+install: uninstall all
+	cp $(OBJDIR)/$(TGTDIR)/lnls-generate-kickmap $(BINDEST_DIR)
+	cp $(OBJDIR)/$(TGTDIR)/libids.a $(LIBDEST_DIR)
+	$(MAKE) install -C $(PKGDIR)
+
+develop: uninstall all
+	ln -srf $(OBJDIR)/$(TGTDIR)/lnls-generate-kickmap $(BINDEST_DIR)
+	ln -srf $(OBJDIR)/$(TGTDIR)/libids.a $(LIBDEST_DIR)
+	$(MAKE) develop -C $(PKGDIR)
+
 clean:
-	-rm -rf $(OBJDIR) run_test lnls-generate-kickmap fieldmap_extrapolation .depend *.out *.dat *~ *.o *.a *.txt
+	-rm -rf $(OBJDIR) .depend *.out *.dat *~ *.o *.a *.txt $(PKGDIR)/$(PKGIDDIR)/insertion_devices.py $(PKGDIR)/$(PKGIDDIR)/insertion_devices_wrap.cxx
+	$(MAKE) clean -C $(PKGDIR)
 
 uninstall:
 	-rm -rf $(BINDEST_DIR)/lnls-generate-kickmap
@@ -173,5 +188,5 @@ cleanall: clean
 *.c: VERSION
 	touch $(SRCDIR)/*.c
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+$(OBJDIR)/$(TGTDIR)/%.o: $(SRCDIR)/%.cpp
 	$(CXX) -c $(CFLAGS) $(INC) -I./$(SRCDIR) $< -o $@;

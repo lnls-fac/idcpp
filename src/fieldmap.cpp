@@ -10,24 +10,7 @@
 #include <interpolation.h>
 #include <stdlib.h>
 #include <vector3d.hpp>
-#include <fieldmap.h>
-
-struct FieldMapException {
-	enum type {
-		success                       = 0,
-		inconsistent_dimensions       = 1,
-		out_of_range_x_min            = 2,
-		out_of_range_x_max            = 3,
-		out_of_range_z_min            = 4,
-		out_of_range_z_max            = 5,
-		file_not_found                = 6,
-		out_of_range_y_min            = 7,
-		out_of_range_y_max            = 8
-	};
-};
-
-typedef std::vector<double> state_type;
-
+#include <api.h>
 
 FieldMap::FieldMap(const std::string& fname_, size_t id_) :
 		id(id_),
@@ -36,8 +19,8 @@ FieldMap::FieldMap(const std::string& fname_, size_t id_) :
 		z_min(0), dz(0), z_max(0),
 		data(0)
 {
-	bool consistent_dimensions;
 
+	bool consistent_dimensions;
 	bool header = true;
 	this->read_fieldmap_from_file(fname_, header, consistent_dimensions);
 
@@ -52,11 +35,26 @@ FieldMap::FieldMap(const std::string& fname_, size_t id_) :
 	calc_interpolant();
 }
 
-
-void FieldMap::delete_data() {
-	delete [] this->data;
+FieldMap::FieldMap(const FieldMap &obj){
+	this->fname  			= obj.fname;
+	this->data   			= obj.data;
+	this->nx     			= obj.nx;
+	this->nz     			= obj.nz;
+	this->x_min  			= obj.x_min;
+	this->x_max  			= obj.x_max;
+	this->z_min  			= obj.z_min;
+	this->z_max  			= obj.z_max;
+	this->y      			= obj.y;
+	this->dx     			= obj.dx;
+	this->dz     			= obj.dz;
+	this->x_grid 			= obj.x_grid;
+	this->z_grid 			= obj.z_grid;
+	this->interpolant = obj.interpolant;
 }
 
+void FieldMap::delete_data() {
+	if (this->data != 0) { std::free(this->data); }
+}
 
 void FieldMap::read_fieldmap_from_file(const std::string& fname_, bool header, bool& consistent_dimensions)
 {
@@ -105,11 +103,13 @@ void FieldMap::read_fieldmap_from_file(const std::string& fname_, bool header, b
 			this->data = (double*) std::realloc(this->data, capacity*3*sizeof(double));
 		}
 		file >> x >> y >> z >> bx >> by >> bz;
-		data[3*nr_points+0] = bx;
+		data[3*nr_points+0] = bx + bx;
 		data[3*nr_points+1] = by;
 		data[3*nr_points+2] = bz;
 		if (file.eof()) break;
-		x_set.insert(x/1000.0); y_set.insert(y/1000.0); z_set.insert(z/1000.0);
+		x_set.insert(x/1000.0);
+		y_set.insert(y/1000.0);
+		z_set.insert(z/1000.0);
 		nr_points++;
 	}
 
@@ -146,6 +146,17 @@ void FieldMap::read_fieldmap_from_file(const std::string& fname_, bool header, b
 
 }
 
+void FieldMap::change_y_sign(){
+	this->y = -this->y;
+	for (int i=0; i < this->nx*this->nz; i+=1){
+
+		this->data[3*i+0] = -this->data[3*i+0];
+		this->data[3*i+1] =  this->data[3*i+1];
+		this->data[3*i+2] = -this->data[3*i+2];
+	}
+	this->calc_interpolant();
+}
+
 void FieldMap::calc_interpolant(){
 
 	int data_array_size = 3*this->nx*this->nz;
@@ -159,8 +170,6 @@ void FieldMap::calc_interpolant(){
 	alglib::spline2dinterpolant interpolant;
 	alglib::spline2dbuildbicubicv(x_array, this->nx, z_array, this->nz, data_array, 3, interpolant);
 	this->interpolant = interpolant;
-	this->delete_data();
-
 }
 
 Vector3D<double> FieldMap::field(const Vector3D<double>& pos) const{
