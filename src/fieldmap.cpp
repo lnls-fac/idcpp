@@ -6,10 +6,7 @@
 #include <sstream>
 #include <cstdlib>
 #include <set>
-#include <linalg.h>
-#include <interpolation.h>
 #include <stdlib.h>
-#include <vector3d.hpp>
 #include <api.h>
 
 FieldMap::FieldMap(const std::string& fname_, size_t id_) :

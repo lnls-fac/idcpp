@@ -2,7 +2,7 @@
 
 %{
     #include "api.h"
-    #include "vector3d.hpp"
+    #include "vector3d.h"
 %}
 
 %include "std_string.i"
@@ -10,7 +10,7 @@
 
 
 %include "api.h"
-%include "vector3d.hpp"
+%include "vector3d.h"
 
 %template(CppVector3D) Vector3D<double>;
 

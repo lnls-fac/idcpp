@@ -2,9 +2,6 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
-#include <linalg.h>
-#include <interpolation.h>
-#include <vector3d.hpp>
 #include <api.h>
 
 FieldMapContainer::FieldMapContainer(std::vector<std::string> fieldmap_filenames, bool use_field_simmetry){

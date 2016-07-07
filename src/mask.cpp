@@ -4,9 +4,6 @@
 #include <string>
 #include <algorithm>
 #include <map>
-#include <vector3d.hpp>
-#include <linalg.h>
-#include <interpolation.h>
 #include <api.h>
 
 enum Shape{ SQUARE, RECTANGLE, DIAMOND, CIRCLE, ELLIPSE, TABLE };

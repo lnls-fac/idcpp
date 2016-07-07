@@ -3,9 +3,10 @@
 
 #include <string>
 #include <vector>
-#include "vector3d.hpp"
-#include "linalg.h"
-#include "interpolation.h"
+#include <alglib/linalg.h>
+#include <alglib/interpolation.h>
+#include "vector3d.h"
+#include "idmodel.h"
 
 struct GridException {
 	enum type { inconsistent_dimensions = 0,};

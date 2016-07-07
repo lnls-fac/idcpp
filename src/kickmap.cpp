@@ -64,8 +64,8 @@ void KickMap::calc_kicks(){
   std::cout << std::endl;
   std::cout << "Calculating kickmap..." << std::endl;
 
-  this->kick_x.clear();
-  this->kick_y.clear();
+  if (!this->kick_x.empty()) { this->kick_x.clear(); }
+  if (!this->kick_y.empty()) { this->kick_y.clear(); }
 
   for(int i = 0; i < this->grid.ny; i+=1){
     kick_x_vector.clear();

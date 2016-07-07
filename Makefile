@@ -43,6 +43,7 @@ DFLAGS      = -DVERSION=$(VERSION)
 PYTHON      = python3
 
 INCDIR  = include
+ALGLIBDIR = alglib
 SRCDIR  = src
 OBJDIR  = build
 TGTDIR  = release
@@ -53,7 +54,7 @@ BINDEST_DIR = /usr/local/bin
 LIBDEST_DIR = /usr/local/lib
 INCDEST_DIR = /usr/local/include
 
-LIBSOURCES_CPP =  ap.cpp \
+ALGLIBSRC_CPP  = 	ap.cpp \
 									alglibinternal.cpp \
 									alglibmisc.cpp \
 									linalg.cpp \
@@ -62,24 +63,26 @@ LIBSOURCES_CPP =  ap.cpp \
 									optimization.cpp \
 									solvers.cpp \
 									specialfunctions.cpp \
-									fieldmap.cpp \
+
+LIBSOURCES_CPP = 	fieldmap.cpp \
 									fieldmapcontainer.cpp \
 									rungekutta.cpp \
 									grid.cpp \
 									mask.cpp \
 									kickmap.cpp \
+									block.cpp \
+									cassette.cpp \
+									delta.cpp \
+									epu.cpp \
 
-BINSOURCES_CPP =	generate_kickmap.cpp
-
-BINSOURCES_CPP2 =	tests.cpp
+BINSOURCES_CPP =	generatekickmap.cpp
 
 AUXFILES  = VERSION
 
 LIBS = -lm
-INC  = -I./$(INCDIR) -I/usr/include/python3.4
+INC  = -I./$(INCDIR) -I./$(INCDIR)/$(ALGLIBDIR) -I/usr/include/python3.4
 
-$(shell touch $(SRCDIR)/generate_kickmap.cpp) # this is so that last compilation time always goes into executable
-$(shell touch $(SRCDIR)/tests.cpp)
+$(shell touch $(SRCDIR)/generatekickmap.cpp) # this is so that last compilation time always goes into executable
 
 ifeq ($(MAKECMDGOALS),insertion_devices-debug)
   CFLAGS    = $(MACHINE) $(DBG_FLAG) $(DFLAGS) -pthread
@@ -87,50 +90,46 @@ else
   CFLAGS    = $(MACHINE) $(OPT_FLAG) $(DFLAGS) -pthread
 endif
 
-
+ALGLIBOBJS  = $(addprefix $(OBJDIR)/$(TGTDIR)/$(ALGLIBDIR)/, $(ALGLIBSRC_CPP:.cpp=.o))
 LIBOBJECTS  = $(addprefix $(OBJDIR)/$(TGTDIR)/, $(LIBSOURCES_CPP:.cpp=.o))
 BINOBJECTS  = $(addprefix $(OBJDIR)/$(TGTDIR)/, $(BINSOURCES_CPP:.cpp=.o))
-BINOBJECTS2 = $(addprefix $(OBJDIR)/$(TGTDIR)/, $(BINSOURCES_CPP2:.cpp=.o))
 LDFLAGS    = $(MACHINE)
-
 
 .PHONY: all alllibs clean cleanall
 
 #### TARGETS ####
 
-all: libids lnls-generate-kickmap python_package
+all: alglib libids lnls-generate-kickmap python_package
 
 python_package: $(PKGDIR)/$(PKGIDDIR)/insertion_devices.py $(PKGDIR)/$(PKGIDDIR)/_insertion_devices.so
 
-test: libids run_test
-
 #### GENERATES DEPENDENCY FILE ####
-$(shell $(CXX) -MM $(CFLAGS) $(addprefix $(SRCDIR)/, $(LIBSOURCES_CPP)) $(addprefix $(SRCDIR)/, $(BINSOURCES_CPP2)) $(addprefix $(SRCDIR)/, $(BINSOURCES_CPP)) | sed 's/.*\.o/$(OBJDIR)\/$(TGTDIR)\/&/' > .depend)
+$(shell $(CXX) -MM $(CFLAGS) $(addprefix $(SRCDIR)/, $(LIBSOURCES_CPP)) $(addprefix $(SRCDIR)/$(ALGLIBDIR)/, $(ALGLIBSRC_CPP)) $(addprefix $(SRCDIR)/, $(BINSOURCES_CPP)) | sed 's/.*\.o/$(OBJDIR)\/$(TGTDIR)\/&/' > .depend)
 -include .depend
 
 lnls-generate-kickmap: $(OBJDIR)/$(TGTDIR)/lnls-generate-kickmap
 
-run_test: $(OBJDIR)/$(TGTDIR)/run_test
+alglib: $(OBJDIR)/$(TGTDIR)/$(ALGLIBDIR)/alglib.a
 
 libids: $(OBJDIR)/$(TGTDIR)/libids.a
 
-$(OBJDIR)/$(TGTDIR)/libids.a: $(LIBOBJECTS)
+$(OBJDIR)/$(TGTDIR)/$(ALGLIBDIR)/alglib.a: $(ALGLIBOBJS)
 	$(AR) $(ARFLAGS) $@ $^
 
-$(OBJDIR)/$(TGTDIR)/lnls-generate-kickmap: libids $(BINOBJECTS)
-	$(CXX) $(LDFLAGS) $(BINOBJECTS) $(OBJDIR)/$(TGTDIR)/libids.a $(LIBS) -o $@
+$(OBJDIR)/$(TGTDIR)/libids.a: $(OBJDIR)/$(TGTDIR)/$(ALGLIBDIR)/alglib.a $(LIBOBJECTS)
+	$(AR) $(ARFLAGS) $@ $^
 
-$(OBJDIR)/$(TGTDIR)/run_test: libids $(BINOBJECTS2)
-	$(CXX) $(LDFLAGS) $(BINOBJECTS2) $(OBJDIR)/$(TGTDIR)/libids.a $(LIBS) -o $@
+$(OBJDIR)/$(TGTDIR)/lnls-generate-kickmap: $(OBJDIR)/$(TGTDIR)/$(ALGLIBDIR)/alglib.a libids $(BINOBJECTS)
+	$(CXX) $(LDFLAGS) $(BINOBJECTS) $(OBJDIR)/$(TGTDIR)/$(ALGLIBDIR)/alglib.a $(OBJDIR)/$(TGTDIR)/libids.a $(LIBS) -o $@
 
 $(PKGDIR)/$(PKGIDDIR)/insertion_devices.py: $(PKGDIR)/$(SWIGDIR)/insertion_devices.py | $(PKGDIR)/$(PKGIDDIR)
 	cp $(PKGDIR)/$(SWIGDIR)/insertion_devices.py $(PKGDIR)/$(PKGIDDIR)
 
-$(PKGDIR)/$(PKGIDDIR)/_insertion_devices.so: libids $(OBJDIR)/$(TGTDIR)/libinsertion_devices.so | $(PKGDIR)/$(PKGIDDIR)
+$(PKGDIR)/$(PKGIDDIR)/_insertion_devices.so: $(OBJDIR)/$(TGTDIR)/$(ALGLIBDIR)/alglib.a libids $(OBJDIR)/$(TGTDIR)/libinsertion_devices.so | $(PKGDIR)/$(PKGIDDIR)
 	cp $(OBJDIR)/$(TGTDIR)/libinsertion_devices.so $(PKGDIR)/$(PKGIDDIR)/_insertion_devices.so
 
 $(OBJDIR)/$(TGTDIR)/libinsertion_devices.so: $(OBJDIR)/$(TGTDIR)/insertion_devices_wrap.o $(LIBOBJECTS) | $(OBJDIR)/$(TGTDIR)
-	$(CXX) -shared $(LDFLAGS) $(LIBOBJECTS)  $(OBJDIR)/$(TGTDIR)/insertion_devices_wrap.o $(LIBS) -o $@
+	$(CXX) -shared $(LDFLAGS) $(LIBOBJECTS) $(ALGLIBOBJS) $(OBJDIR)/$(TGTDIR)/insertion_devices_wrap.o $(LIBS) -o $@
 
 $(OBJDIR)/$(TGTDIR)/insertion_devices_wrap.o: $(PKGDIR)/$(SWIGDIR)/insertion_devices_wrap.cxx | $(OBJDIR)/$(TGTDIR)
 	$(CXX) -c $(CFLAGS) $(INC) $< -o $@
@@ -138,17 +137,20 @@ $(OBJDIR)/$(TGTDIR)/insertion_devices_wrap.o: $(PKGDIR)/$(SWIGDIR)/insertion_dev
 $(PKGDIR)/$(SWIGDIR)/insertion_devices.py $(PKGDIR)/$(SWIGDIR)/insertion_devices_wrap.cxx: $(PKGDIR)/$(SWIGDIR)/insertion_devices.i $(LIBOBJECTS)
 	swig -c++ -python $(INC) $(PKGDIR)/$(SWIGDIR)/insertion_devices.i
 
+$(ALGLIBOBJS): | $(OBJDIR)/$(TGTDIR)/$(ALGLIBDIR)
+
 $(LIBOBJECTS): | $(OBJDIR)/$(TGTDIR)
 
 $(BINOBJECTS): | $(OBJDIR)/$(TGTDIR)
-
-$(BINOBJECTS2): | $(OBJDIR)/$(TGTDIR)
 
 $(PKGDIR)/$(PKGIDDIR):
 	mkdir -p $(PKGDIR)/$(PKGIDDIR)
 
 $(OBJDIR)/$(TGTDIR):
 	mkdir -p $(OBJDIR)/$(TGTDIR)
+
+$(OBJDIR)/$(TGTDIR)/$(ALGLIBDIR):
+	mkdir -p $(OBJDIR)/$(TGTDIR)/$(ALGLIBDIR)
 
 $(BINDEST_DIR):
 	mkdir $(BINDEST_DIR)
@@ -187,6 +189,9 @@ cleanall: clean
 	touch $(SRCDIR)/*.cc
 *.c: VERSION
 	touch $(SRCDIR)/*.c
+
+$(OBJDIR)/$(TGTDIR)/$(ALGLIBDIR)/%.o: $(SRCDIR)/$(ALGLIBDIR)/%.cpp
+	$(CXX) -c $(CFLAGS) $(INC) -I./$(SRCDIR)/$(ALGLIBDIR) $< -o $@;
 
 $(OBJDIR)/$(TGTDIR)/%.o: $(SRCDIR)/%.cpp
 	$(CXX) -c $(CFLAGS) $(INC) -I./$(SRCDIR) $< -o $@;
