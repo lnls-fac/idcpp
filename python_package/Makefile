@@ -1,6 +1,6 @@
 PYTHON  = python3
 SWIGDIR = swig
-IDDIR   = insertion_devices
+IDDIR   = idcpp
 
 .NOTPARALLEL:
 
@@ -17,4 +17,4 @@ develop:
 	$(PYTHON) setup.py develop
 
 clean:
-	-rm -rf .depend *.o *.so dist build insertion_devices __pycache__ insertion_devices.egg-info $(SWIGDIR)/*_wrap.cxx $(SWIGDIR)/insertion_devices.py
+	-rm -rf .depend *.o *.so dist build idcpp __pycache__ idcpp.egg-info $(SWIGDIR)/*_wrap.cxx $(SWIGDIR)/idcpp.py

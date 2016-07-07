@@ -2,17 +2,19 @@ General instructions
 ====================
 
 These general instructions will build the binary and library versions of
-insertion devices. Before starting, read the requirements
+idcpp, and also the python package. Before starting, read the requirements
 in the sections below.
 
 REQUIREMENTS
 
 - a C++ compiler with C++11 support (tested with GCC 4.8)
+- SWIG 2 (tested with SWIG 2.0.11)
+- Python 3 (tested with Python 3.4) with header files
+- Python setuptools (>=16.0)
 
 INSTRUCTIONS
 
 1. Compile with 'make all'.
 
-2. Install with 'make install'. The installation directory is
-$(DEST_DIR), with DEST_DIR=/usr/local/bin by default. Alternatively, install a
-symbolic link to the local compiled version with 'make develop'.
+2. Install with 'make install' or, alternatively, install a symbolic link to
+the local compiled versions with 'make develop'.

@@ -49,7 +49,7 @@ OBJDIR  = build
 TGTDIR  = release
 SWIGDIR = swig
 PKGDIR  = python_package
-PKGIDDIR = insertion_devices
+PKGIDDIR = idcpp
 BINDEST_DIR = /usr/local/bin
 LIBDEST_DIR = /usr/local/lib
 INCDEST_DIR = /usr/local/include
@@ -84,7 +84,7 @@ INC  = -I./$(INCDIR) -I./$(INCDIR)/$(ALGLIBDIR) -I/usr/include/python3.4
 
 $(shell touch $(SRCDIR)/generatekickmap.cpp) # this is so that last compilation time always goes into executable
 
-ifeq ($(MAKECMDGOALS),insertion_devices-debug)
+ifeq ($(MAKECMDGOALS),idcpp-debug)
   CFLAGS    = $(MACHINE) $(DBG_FLAG) $(DFLAGS) -pthread
 else
   CFLAGS    = $(MACHINE) $(OPT_FLAG) $(DFLAGS) -pthread
@@ -99,9 +99,9 @@ LDFLAGS    = $(MACHINE)
 
 #### TARGETS ####
 
-all: alglib libids lnls-generate-kickmap python_package
+all: alglib libidcpp lnls-generate-kickmap python_package
 
-python_package: $(PKGDIR)/$(PKGIDDIR)/insertion_devices.py $(PKGDIR)/$(PKGIDDIR)/_insertion_devices.so
+python_package: $(PKGDIR)/$(PKGIDDIR)/idcpp.py $(PKGDIR)/$(PKGIDDIR)/_idcpp.so
 
 #### GENERATES DEPENDENCY FILE ####
 $(shell $(CXX) -MM $(CFLAGS) $(addprefix $(SRCDIR)/, $(LIBSOURCES_CPP)) $(addprefix $(SRCDIR)/$(ALGLIBDIR)/, $(ALGLIBSRC_CPP)) $(addprefix $(SRCDIR)/, $(BINSOURCES_CPP)) | sed 's/.*\.o/$(OBJDIR)\/$(TGTDIR)\/&/' > .depend)
@@ -111,31 +111,31 @@ lnls-generate-kickmap: $(OBJDIR)/$(TGTDIR)/lnls-generate-kickmap
 
 alglib: $(OBJDIR)/$(TGTDIR)/$(ALGLIBDIR)/alglib.a
 
-libids: $(OBJDIR)/$(TGTDIR)/libids.a
+libidcpp: $(OBJDIR)/$(TGTDIR)/libidcpp.a
 
 $(OBJDIR)/$(TGTDIR)/$(ALGLIBDIR)/alglib.a: $(ALGLIBOBJS)
 	$(AR) $(ARFLAGS) $@ $^
 
-$(OBJDIR)/$(TGTDIR)/libids.a: $(OBJDIR)/$(TGTDIR)/$(ALGLIBDIR)/alglib.a $(LIBOBJECTS)
+$(OBJDIR)/$(TGTDIR)/libidcpp.a: $(OBJDIR)/$(TGTDIR)/$(ALGLIBDIR)/alglib.a $(LIBOBJECTS)
 	$(AR) $(ARFLAGS) $@ $^
 
-$(OBJDIR)/$(TGTDIR)/lnls-generate-kickmap: $(OBJDIR)/$(TGTDIR)/$(ALGLIBDIR)/alglib.a libids $(BINOBJECTS)
-	$(CXX) $(LDFLAGS) $(BINOBJECTS) $(OBJDIR)/$(TGTDIR)/$(ALGLIBDIR)/alglib.a $(OBJDIR)/$(TGTDIR)/libids.a $(LIBS) -o $@
+$(OBJDIR)/$(TGTDIR)/lnls-generate-kickmap: $(OBJDIR)/$(TGTDIR)/$(ALGLIBDIR)/alglib.a libidcpp $(BINOBJECTS)
+	$(CXX) $(LDFLAGS) $(BINOBJECTS) $(OBJDIR)/$(TGTDIR)/$(ALGLIBDIR)/alglib.a $(OBJDIR)/$(TGTDIR)/libidcpp.a $(LIBS) -o $@
 
-$(PKGDIR)/$(PKGIDDIR)/insertion_devices.py: $(PKGDIR)/$(SWIGDIR)/insertion_devices.py | $(PKGDIR)/$(PKGIDDIR)
-	cp $(PKGDIR)/$(SWIGDIR)/insertion_devices.py $(PKGDIR)/$(PKGIDDIR)
+$(PKGDIR)/$(PKGIDDIR)/idcpp.py: $(PKGDIR)/$(SWIGDIR)/idcpp.py | $(PKGDIR)/$(PKGIDDIR)
+	cp $(PKGDIR)/$(SWIGDIR)/idcpp.py $(PKGDIR)/$(PKGIDDIR)
 
-$(PKGDIR)/$(PKGIDDIR)/_insertion_devices.so: $(OBJDIR)/$(TGTDIR)/$(ALGLIBDIR)/alglib.a libids $(OBJDIR)/$(TGTDIR)/libinsertion_devices.so | $(PKGDIR)/$(PKGIDDIR)
-	cp $(OBJDIR)/$(TGTDIR)/libinsertion_devices.so $(PKGDIR)/$(PKGIDDIR)/_insertion_devices.so
+$(PKGDIR)/$(PKGIDDIR)/_idcpp.so: $(OBJDIR)/$(TGTDIR)/$(ALGLIBDIR)/alglib.a libidcpp $(OBJDIR)/$(TGTDIR)/libidcpp.so | $(PKGDIR)/$(PKGIDDIR)
+	cp $(OBJDIR)/$(TGTDIR)/libidcpp.so $(PKGDIR)/$(PKGIDDIR)/_idcpp.so
 
-$(OBJDIR)/$(TGTDIR)/libinsertion_devices.so: $(OBJDIR)/$(TGTDIR)/insertion_devices_wrap.o $(LIBOBJECTS) | $(OBJDIR)/$(TGTDIR)
-	$(CXX) -shared $(LDFLAGS) $(LIBOBJECTS) $(ALGLIBOBJS) $(OBJDIR)/$(TGTDIR)/insertion_devices_wrap.o $(LIBS) -o $@
+$(OBJDIR)/$(TGTDIR)/libidcpp.so: $(OBJDIR)/$(TGTDIR)/idcpp_wrap.o $(LIBOBJECTS) | $(OBJDIR)/$(TGTDIR)
+	$(CXX) -shared $(LDFLAGS) $(LIBOBJECTS) $(ALGLIBOBJS) $(OBJDIR)/$(TGTDIR)/idcpp_wrap.o $(LIBS) -o $@
 
-$(OBJDIR)/$(TGTDIR)/insertion_devices_wrap.o: $(PKGDIR)/$(SWIGDIR)/insertion_devices_wrap.cxx | $(OBJDIR)/$(TGTDIR)
+$(OBJDIR)/$(TGTDIR)/idcpp_wrap.o: $(PKGDIR)/$(SWIGDIR)/idcpp_wrap.cxx | $(OBJDIR)/$(TGTDIR)
 	$(CXX) -c $(CFLAGS) $(INC) $< -o $@
 
-$(PKGDIR)/$(SWIGDIR)/insertion_devices.py $(PKGDIR)/$(SWIGDIR)/insertion_devices_wrap.cxx: $(PKGDIR)/$(SWIGDIR)/insertion_devices.i $(LIBOBJECTS)
-	swig -c++ -python $(INC) $(PKGDIR)/$(SWIGDIR)/insertion_devices.i
+$(PKGDIR)/$(SWIGDIR)/idcpp.py $(PKGDIR)/$(SWIGDIR)/idcpp_wrap.cxx: $(PKGDIR)/$(SWIGDIR)/idcpp.i $(LIBOBJECTS)
+	swig -c++ -python $(INC) $(PKGDIR)/$(SWIGDIR)/idcpp.i
 
 $(ALGLIBOBJS): | $(OBJDIR)/$(TGTDIR)/$(ALGLIBDIR)
 
@@ -163,21 +163,21 @@ $(INCDEST_DIR):
 
 install: uninstall all
 	cp $(OBJDIR)/$(TGTDIR)/lnls-generate-kickmap $(BINDEST_DIR)
-	cp $(OBJDIR)/$(TGTDIR)/libids.a $(LIBDEST_DIR)
+	cp $(OBJDIR)/$(TGTDIR)/libidcpp.a $(LIBDEST_DIR)
 	$(MAKE) install -C $(PKGDIR)
 
 develop: uninstall all
 	ln -srf $(OBJDIR)/$(TGTDIR)/lnls-generate-kickmap $(BINDEST_DIR)
-	ln -srf $(OBJDIR)/$(TGTDIR)/libids.a $(LIBDEST_DIR)
+	ln -srf $(OBJDIR)/$(TGTDIR)/libidcpp.a $(LIBDEST_DIR)
 	$(MAKE) develop -C $(PKGDIR)
 
 clean:
-	-rm -rf $(OBJDIR) .depend *.out *.dat *~ *.o *.a *.txt $(PKGDIR)/$(PKGIDDIR)/insertion_devices.py $(PKGDIR)/$(PKGIDDIR)/insertion_devices_wrap.cxx
+	-rm -rf $(OBJDIR) .depend *.out *.dat *~ *.o *.a *.txt $(PKGDIR)/$(PKGIDDIR)/idcpp.py $(PKGDIR)/$(PKGIDDIR)/idcpp_wrap.cxx
 	$(MAKE) clean -C $(PKGDIR)
 
 uninstall:
 	-rm -rf $(BINDEST_DIR)/lnls-generate-kickmap
-	-rm -rf $(LIBDEST_DIR)/libids.a
+	-rm -rf $(LIBDEST_DIR)/libidcpp.a
 
 cleanall: clean
 

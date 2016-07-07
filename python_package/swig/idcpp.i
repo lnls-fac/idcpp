@@ -1,4 +1,4 @@
-%module insertion_devices
+%module idcpp
 
 %{
     #include "api.h"

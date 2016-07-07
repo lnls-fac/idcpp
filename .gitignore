@@ -4,7 +4,7 @@ build/*
 input_files/*
 python_package/build/*
 python_package/dist/*
-python_package/insertion_devices/*
-python_package/insertion_devices.egg-info/*
-python_package/swig/*.py
+python_package/idcpp/*
+python_package/idcpp.egg-info/*
+python_package/swig/idcpp.py
 python_package/swig/*.cxx
