@@ -2,17 +2,21 @@
 
 %{
     #include "api.h"
+    #include "idmodel.h"
     #include "vector3d.h"
+    #include "matrix3d.h"
 %}
 
 %include "std_string.i"
 %include "std_vector.i"
 
-
 %include "api.h"
+%include "idmodel.h"
 %include "vector3d.h"
+%include "matrix3d.h"
 
 %template(CppVector3D) Vector3D<double>;
+%template(CppMatrix3D) Matrix3D<double>;
 
 namespace std {
       %template(CppStringVector) vector<string>;
