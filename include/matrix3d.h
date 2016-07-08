@@ -3,14 +3,14 @@
 
 #include <cmath>
 #include <ostream>
-#include "vector3d.h"
+#include "vector3d.hpp"
 
 template <typename T = double>
 class Matrix3D {
 
 public:
 
-  Matrix3D() : vx(0,0,0), vy(0,0,0), vz(0,0,0) {}
+  Matrix3D() : vx(0.0,0.0,0.0), vy(0.0,0.0,0.0), vz(0.0,0.0,0.0) {}
   Matrix3D(const Matrix3D<T>& m) : vx(m.vx), vy(m.vy), vz(m.vz) {}
   Matrix3D(const Vector3D<T>& _vx, const Vector3D<T>& _vy, const Vector3D<T>& _vz) : vx(_vx), vy(_vy), vz(_vz) {}
   Matrix3D<T>& set_constant(const T& _v) { vx = Vector3D<T>(_v,_v,_v); vy = Vector3D<T>(_v,_v,_v); vz = Vector3D<T>(_v,_v,_v); return *this;}
@@ -25,13 +25,13 @@ public:
   Vector3D<T>  operator *(const Vector3D<T>& v) const;
   Matrix3D<T>  operator *(const Matrix3D<T>& v);
   Matrix3D<T>  operator *(const T& v) { return Matrix3D(v*vx,v*vy,v*vz); }
-  static const Matrix3D<T> I() { return Matrix3D<T>(Vector3D<double>(1,0,0),Vector3D<double>(0,1,0),Vector3D<double>(0,0,1));}
-  static const Matrix3D<T> rotx90p() {return Matrix3D<T>(Vector3D<T>(+1,0,0),Vector3D<T>(0,0,-1),Vector3D<T>(0,+1,0));}
-  static const Matrix3D<T> rotx90n() {return Matrix3D<T>(Vector3D<T>(+1,0,0),Vector3D<T>(0,0,+1),Vector3D<T>(0,-1,0));}
-  static const Matrix3D<T> roty90p() {return Matrix3D<T>(Vector3D<T>(0,0,+1),Vector3D<T>(0,+1,0),Vector3D<T>(-1,0,0));}
-  static const Matrix3D<T> roty90n() {return Matrix3D<T>(Vector3D<T>(0,0,-1),Vector3D<T>(0,+1,0),Vector3D<T>(+1,0,0));}
-  static const Matrix3D<T> rotz90p() {return Matrix3D<T>(Vector3D<T>(0,-1,0),Vector3D<T>(+1,0,0),Vector3D<T>(0,0,+1));}
-  static const Matrix3D<T> rotz90n() {return Matrix3D<T>(Vector3D<T>(0,+1,0),Vector3D<T>(-1,0,0),Vector3D<T>(0,0,+1));}
+  static const Matrix3D<T> I() { return Matrix3D<T>(Vector3D<double>(1.0,0.0,0.0),Vector3D<double>(0.0,1.0,0.0),Vector3D<double>(0.0,0.0,1.0));}
+  static const Matrix3D<T> rotx90p() {return Matrix3D<T>(Vector3D<T>(+1.0,0.0,0.0),Vector3D<T>(0.0,0.0,-1.0),Vector3D<T>(0.0,+1.0,0.0));}
+  static const Matrix3D<T> rotx90n() {return Matrix3D<T>(Vector3D<T>(+1.0,0.0,0.0),Vector3D<T>(0.0,0.0,+1.0),Vector3D<T>(0.0,-1.0,0.0));}
+  static const Matrix3D<T> roty90p() {return Matrix3D<T>(Vector3D<T>(0.0,0.0,+1.0),Vector3D<T>(0.0,+1.0,0.0),Vector3D<T>(-1.0,0.0,0.0));}
+  static const Matrix3D<T> roty90n() {return Matrix3D<T>(Vector3D<T>(0.0,0.0,-1.0),Vector3D<T>(0.0,+1.0,0.0),Vector3D<T>(+1.0,0.0,0.0));}
+  static const Matrix3D<T> rotz90p() {return Matrix3D<T>(Vector3D<T>(0.0,-1.0,0.0),Vector3D<T>(+1.0,0.0,0.0),Vector3D<T>(0.0,0.0,+1.0));}
+  static const Matrix3D<T> rotz90n() {return Matrix3D<T>(Vector3D<T>(0.0,+1.0,0.0),Vector3D<T>(-1.0,0.0,0.0),Vector3D<T>(0.0,0.0,+1.0));}
 
 private:
 
@@ -81,9 +81,9 @@ template <typename T>
 Matrix3D<T>& Matrix3D<T>::set_rotation_x(const double& angle) {
   double c = std::cos(angle);
   double s = std::sin(angle);
-  vx = Vector3D<T>( 1, 0, 0);
-  vy = Vector3D<T>( 0,+c,-s);
-  vz = Vector3D<T>( 0,+s,+c);
+  vx = Vector3D<T>( 1.0, 0.0, 0.0);
+  vy = Vector3D<T>( 0.0, +c, -s);
+  vz = Vector3D<T>( 0.0, +s, +c);
   return *this;
 }
 
@@ -91,9 +91,9 @@ template <typename T>
 Matrix3D<T>& Matrix3D<T>::set_rotation_y(const double& angle) {
   double c = std::cos(angle);
   double s = std::sin(angle);
-  vx = Vector3D<T>(+c, 0, +s);
-  vy = Vector3D<T>( 0, 1,  0);
-  vz = Vector3D<T>(-s, 0, +c);
+  vx = Vector3D<T>(+c, 0.0, +s);
+  vy = Vector3D<T>( 0.0, 1.0,  0.0);
+  vz = Vector3D<T>(-s, 0.0, +c);
   return *this;
 }
 
@@ -101,9 +101,9 @@ template <typename T>
 Matrix3D<T>& Matrix3D<T>::set_rotation_z(const double& angle) {
   double c = std::cos(angle);
   double s = std::sin(angle);
-  vx = Vector3D<T>(+c, -s, 0);
-  vy = Vector3D<T>(+s, +c, 0);
-  vz = Vector3D<T>( 0,  0, 1);
+  vx = Vector3D<T>(+c, -s, 0.0);
+  vy = Vector3D<T>(+s, +c, 0.0);
+  vz = Vector3D<T>( 0.0,  0.0, 1.0);
   return *this;
 }
 

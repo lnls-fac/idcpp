@@ -8,12 +8,13 @@ void newton_lorentz_equation(double alpha, Vector3D<> r, Vector3D<> p,  Vector3D
   dr_ds.x = p.x;
   dr_ds.y = p.y;
   dr_ds.z = p.z;
-  dp_ds.x = - alpha * (p.y * b.z - p.z * b.y);
-  dp_ds.y = - alpha * (p.z * b.x - p.x * b.z);
-  dp_ds.z = - alpha * (p.x * b.y - p.y * b.x);
+  dp_ds.x = -alpha * (p.y * b.z - p.z * b.y);
+  dp_ds.y = -alpha * (p.z * b.x - p.x * b.z);
+  dp_ds.z = -alpha * (p.x * b.y - p.y * b.x);
+
 }
 
-void runge_kutta(FieldMapContainer& fieldmaps, double brho, double beta, double zmax, double step, Mask mask, Vector3D<> r, Vector3D<> p, Vector3D<>& kicks){
+void runge_kutta(InsertionDevice& insertiondevice, double brho, double beta, double zmax, double step, Mask mask, Vector3D<> r, Vector3D<> p, Vector3D<>& kicks){
 
   double alpha = 1.0/brho/beta;
   bool inside = true;
@@ -26,25 +27,25 @@ void runge_kutta(FieldMapContainer& fieldmaps, double brho, double beta, double 
   while (r.z < zmax){
 
     inside = mask.is_inside(r); if(!inside) { p.x = p.y = p.z = NAN; break; }
-    b = fieldmaps.field(r);
+    b = insertiondevice.field(r);
     newton_lorentz_equation(alpha, r, p, b, kr1, kp1);
     r1 = r + (step/2.0)* kr1;
     p1 = p + (step/2.0)* kp1;
 
     inside = mask.is_inside(r1); if(!inside) { p.x = p.y = p.z = NAN; break; }
-    b = fieldmaps.field(r);
+    b1 = insertiondevice.field(r1);
     newton_lorentz_equation(alpha, r1, p1, b1, kr2, kp2);
     r2 = r + (step/2.0)* kr2;
     p2 = p + (step/2.0)* kp2;
 
     inside = mask.is_inside(r2); if(!inside) { p.x = p.y = p.z = NAN; break; }
-    b = fieldmaps.field(r);
+    b2 = insertiondevice.field(r2);
     newton_lorentz_equation(alpha, r2, p2, b2, kr3, kp3);
     r3 = r + step* kr3;
     p3 = p + step* kp3;
 
     inside = mask.is_inside(r3); if(!inside) { p.x = p.y = p.z = NAN; break; }
-    b = fieldmaps.field(r);
+    b3 = insertiondevice.field(r3);
     newton_lorentz_equation(alpha, r3, p3, b3, kr4, kp4);
 
     r = r + (step/6.0)*(kr1 + 2.0*kr2 + 2.0*kr3 + kr4);

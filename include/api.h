@@ -5,7 +5,7 @@
 #include <vector>
 #include <alglib/linalg.h>
 #include <alglib/interpolation.h>
-#include "vector3d.h"
+#include "vector3d.hpp"
 #include "idmodel.h"
 
 struct GridException {
@@ -129,19 +129,49 @@ private:
 
 };
 
-class KickMap {
+class InsertionDevice{
 
 public:
 
-	KickMap(FieldMap& fieldmap, Grid grid, Mask mask, double energy, double runge_kutta_step);
-	KickMap(std::vector<FieldMap>& fieldmaps, Grid grid, Mask mask, double energy, double runge_kutta_step);
-	KickMap(FieldMapContainer& fieldmap_container, Grid grid, Mask mask, double energy, double runge_kutta_step);
+	double x_min;
+	double x_max;
+	double y_min;
+	double y_max;
+	double z_min;
+	double z_max;
+	double physical_length;
 
-	void write_kickmap(std::string filename);
+	InsertionDevice() {};
+	InsertionDevice(FieldMap& fieldmap);
+	InsertionDevice(std::vector<FieldMap>& fieldmaps);
+	InsertionDevice(FieldMapContainer& fieldmap_container);
+	InsertionDevice(EPU& epu);
+	InsertionDevice(DELTA& delta);
+
+	Vector3D<double> field(Vector3D<double>& pos);
+
+	void write_fieldmap_file(std::string filename, std::vector<double> x_vector, double y, std::vector<double> z_vector);
+	void write_fieldmap_files(std::string filename, std::vector<double> x_vector, std::vector<double> y_vector, std::vector<double> z_vector);
 
 private:
 
 	FieldMapContainer fieldmaps;
+	EPU epu;
+	DELTA delta;
+	int type;
+
+};
+
+class KickMap {
+
+public:
+
+	KickMap(InsertionDevice& insertiondevice, Grid grid, Mask mask, double energy, double runge_kutta_step);
+	void write_kickmap(std::string filename);
+
+private:
+
+	InsertionDevice insertiondevice;
   Grid grid;
   Mask mask;
   double energy;
@@ -154,7 +184,6 @@ private:
 
 };
 
-void runge_kutta(FieldMapContainer& fieldmaps, double brho, double beta, double zmax, double step, Mask mask, Vector3D<> r, Vector3D<> p, Vector3D<>& kicks);
-
+void runge_kutta(InsertionDevice& insertiondevice, double brho, double beta, double zmax, double step, Mask mask, Vector3D<> r, Vector3D<> p, Vector3D<>& kicks);
 
 #endif

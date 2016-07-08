@@ -2,7 +2,7 @@
 #include <vector>
 #include <idmodel.h>
 
-Matrix3D<double> Block::get_gmatrix(const Vector3D<double>& r) const {
+Matrix3D<double> Block::get_gmatrix( Vector3D<double> r)  {
   Matrix3D<double> m;
   for(std::vector<Subblock>::size_type i = 0; i != subblocks.size(); i++) {
     m = subblocks[i].get_gmatrix(r);
@@ -10,12 +10,12 @@ Matrix3D<double> Block::get_gmatrix(const Vector3D<double>& r) const {
   return m;
 }
 
-Vector3D<double> Block::get_field(const Vector3D<double>& r) const {
+Vector3D<double> Block::get_field( Vector3D<double> r)  {
   return this->get_gmatrix(r) * this->mag;
 }
 
 
-Matrix3D<double> Subblock::get_gmatrix(const Vector3D<double>& r) const {
+Matrix3D<double> Subblock::get_gmatrix( Vector3D<double> r)  {
   double x[] = {pos.x - r.x - dim.x/2, pos.x - r.x + dim.x/2};
   double y[] = {pos.y - r.y - dim.y/2, pos.y - r.y + dim.y/2};
   double z[] = {pos.z - r.z - dim.z/2, pos.z - r.z + dim.z/2};
@@ -35,7 +35,7 @@ Matrix3D<double> Subblock::get_gmatrix(const Vector3D<double>& r) const {
       }
     }
   }
-  const double c = 0.25 / M_PI;
+   double c = 0.25 / M_PI;
   return Matrix3D<double>(Vector3D<double>(c*gxx,c*gxy,c*gxz),
                     Vector3D<double>(c*gxy,c*gyy,c*gyz),
                     Vector3D<double>(c*gxz,c*gyz,c*gzz));

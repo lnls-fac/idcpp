@@ -12,8 +12,8 @@
 FieldMap::FieldMap(const std::string& fname_, size_t id_) :
 		id(id_),
 		nx(0), nz(0),
-		x_min(0), dx(0), x_max(0),
-		z_min(0), dz(0), z_max(0),
+		x_min(0.0), dx(0.0), x_max(0.0),
+		z_min(0.0), dz(0.0), z_max(0.0),
 		data(0)
 {
 

@@ -11,8 +11,8 @@ Grid::Grid(int nx, int ny, double x_max, double y_max){
   this->x_min = (this->nx > 1) ? - x_max : x_max;
   this->y_min = (this->ny > 1) ? - y_max : y_max;
 
-  this->dx = (this->nx > 1) ? (this->x_max - this->x_min)/(this->nx - 1) : 0;
-  this->dy = (this->ny > 1) ? (this->y_max - this->y_min)/(this->ny - 1) : 0;
+  this->dx = (this->nx > 1) ? (this->x_max - this->x_min)/(this->nx - 1) : 0.0;
+  this->dy = (this->ny > 1) ? (this->y_max - this->y_min)/(this->ny - 1) : 0.0;
 
   this->x.clear();
   this->y.clear();
@@ -43,8 +43,8 @@ Grid::Grid(int nx, int ny, double x_min, double x_max, double y_min, double y_ma
   this->x_min = x_min;
   this->y_min = y_min;
 
-  this->dx = (this->nx > 1) ? (this->x_max - this->x_min)/(this->nx - 1) : 0;
-  this->dy = (this->ny > 1) ? (this->y_max - this->y_min)/(this->ny - 1) : 0;
+  this->dx = (this->nx > 1) ? (this->x_max - this->x_min)/(this->nx - 1) : 0.0;
+  this->dy = (this->ny > 1) ? (this->y_max - this->y_min)/(this->ny - 1) : 0.0;
 
   this->x.clear();
   this->y.clear();

@@ -74,6 +74,7 @@ LIBSOURCES_CPP = 	fieldmap.cpp \
 									cassette.cpp \
 									delta.cpp \
 									epu.cpp \
+									insertiondevice.cpp \
 
 BINSOURCES_CPP =	generatekickmap.cpp
 

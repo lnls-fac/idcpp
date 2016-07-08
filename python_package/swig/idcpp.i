@@ -3,7 +3,7 @@
 %{
     #include "api.h"
     #include "idmodel.h"
-    #include "vector3d.h"
+    #include "vector3d.hpp"
     #include "matrix3d.h"
 %}
 
@@ -12,7 +12,7 @@
 
 %include "api.h"
 %include "idmodel.h"
-%include "vector3d.h"
+%include "vector3d.hpp"
 %include "matrix3d.h"
 
 %template(CppVector3D) Vector3D<double>;

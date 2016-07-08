@@ -10,28 +10,8 @@
 static const double electron_rest_energy = 510998.92811;  // [eV]
 static const double light_speed          = 299792458;     // [m/s]
 
-KickMap::KickMap(FieldMapContainer& fieldmap_container, Grid grid, Mask mask, double energy, double runge_kutta_step){
-  this->fieldmaps = fieldmap_container;
-  this->grid = grid;
-  this->mask = mask;
-  this->energy = energy;
-  this->runge_kutta_step = runge_kutta_step;
-  this->calc_kicks();
-}
-
-KickMap::KickMap(std::vector<FieldMap>& fieldmaps, Grid grid, Mask mask, double energy, double runge_kutta_step){
-  FieldMapContainer fieldmap_container(fieldmaps);
-  this->fieldmaps = fieldmap_container;
-  this->grid = grid;
-  this->mask = mask;
-  this->energy = energy;
-  this->runge_kutta_step = runge_kutta_step;
-  this->calc_kicks();
-}
-
-KickMap::KickMap(FieldMap& fieldmap, Grid grid, Mask mask, double energy, double runge_kutta_step){
-  FieldMapContainer fieldmap_container(fieldmap);
-  this->fieldmaps = fieldmap_container;
+KickMap::KickMap(InsertionDevice& insertiondevice, Grid grid, Mask mask, double energy, double runge_kutta_step){
+  this->insertiondevice = insertiondevice;
   this->grid = grid;
   this->mask = mask;
   this->energy = energy;
@@ -50,14 +30,14 @@ void KickMap::calc_kicks(){
   double beta; double brho;
   calc_brho(this->energy, brho, beta);
 
-  double z_min = this->fieldmaps.z_min;
-  double z_max = this->fieldmaps.z_max;
+  double z_min = this->insertiondevice.z_min;
+  double z_max = this->insertiondevice.z_max;
 
   int count = 0;
   int size = this->grid.nx * this->grid.ny;
   std::vector<double> kick_x_vector;
   std::vector<double> kick_y_vector;
-  Vector3D<> r(0.0, 0.0, z_min);
+  Vector3D<> r(0.0, 0.0, z_min+1);
   Vector3D<> p(0.0, 0.0, 1.0);
   Vector3D<> kick;
 
@@ -74,7 +54,7 @@ void KickMap::calc_kicks(){
     for(int j =0; j < this->grid.nx; j+=1){
       r.x = this->grid.x[j];
       r.y = this->grid.y[i];
-      runge_kutta(this->fieldmaps, brho, beta, z_max, this->runge_kutta_step, this->mask, r, p, kick);
+      runge_kutta(this->insertiondevice, brho, beta, z_max, this->runge_kutta_step, this->mask, r, p, kick);
       kick_x_vector.push_back(kick.x);
       kick_y_vector.push_back(kick.y);
 
@@ -105,7 +85,7 @@ void KickMap::write_kickmap(std::string filename){
   output_file << "# KICKMAP" << std::endl;
   output_file << "# Author: Luana N. P. Vilela @ LNLS, Date: " << date;
   output_file << "# ID Length [m]" << std::endl;
-  output_file << fieldmaps.physical_length << std::endl;
+  output_file << this->insertiondevice.physical_length << std::endl;
   output_file << "# Number of Horizontal Points" << std::endl;
   output_file << this->grid.nx << std::endl;
   output_file << "# Number of Vertical Points" << std::endl;

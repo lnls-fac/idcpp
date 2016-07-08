@@ -1,7 +1,7 @@
 #include <vector>
 #include <idmodel.h>
 
-Vector3D<double> Container::get_field(const Vector3D<double>& r) const {
+Vector3D<double> Container::get_field( Vector3D<double>& r)  {
   Vector3D<double> f;
   for(std::vector<Block>::size_type i = 0; i != blocks.size(); i++) {
     f += blocks[i].get_field(r);
@@ -9,7 +9,7 @@ Vector3D<double> Container::get_field(const Vector3D<double>& r) const {
   return f;
 }
 
-std::vector<Vector3D<double> > Container::get_field(const std::vector<Vector3D<double> >& rvec) const {
+std::vector<Vector3D<double> > Container::get_field( std::vector<Vector3D<double> >& rvec)  {
   std::vector<Vector3D<double> > f;
   for(unsigned int j = 0; j != rvec.size(); j++) {
     Vector3D<double> tf;
@@ -21,7 +21,7 @@ std::vector<Vector3D<double> > Container::get_field(const std::vector<Vector3D<d
   return f;
 }
 
-Container& Container::shift_pos(const Vector3D<double>& dr) {
+Container& Container::shift_pos( Vector3D<double> dr) {
   for(std::vector<Block>::size_type i = 0; i != blocks.size(); i++) {
     blocks[i].set_pos() += dr;
   }
@@ -29,7 +29,7 @@ Container& Container::shift_pos(const Vector3D<double>& dr) {
 }
 
 
-std::ostream& operator <<(std::ostream& out, const HalbachCassette& v) {
+std::ostream& operator <<(std::ostream& out, HalbachCassette& v) {
 
   char buffer[256];
   auto n = v.size();
@@ -60,8 +60,8 @@ std::ostream& operator <<(std::ostream& out, const HalbachCassette& v) {
   return out;
 }
 
-void HalbachCassette::gen_halbach_cassette(const Block& genblock, const Matrix3D<double>& rot, const unsigned int nr_periods, const double& spacing, const int& N) {
-  const double dy = spacing + genblock.get_dim().y;
+void HalbachCassette::gen_halbach_cassette(Block& genblock, const Matrix3D<double>& rot,  unsigned int nr_periods,  double spacing,  int N) {
+  double dy = spacing + genblock.get_dim().y;
   Block block = genblock;
   this->blocks.clear();
   for(unsigned int i=0; i<nr_periods; ++i) {
@@ -74,26 +74,40 @@ void HalbachCassette::gen_halbach_cassette(const Block& genblock, const Matrix3D
   }
 };
 
-HalbachCassette::HalbachCassette(const Block& genblock, const Matrix3D<double>& rot, const unsigned int nr_periods, const double& spacing, const int& N) {
+HalbachCassette::HalbachCassette(Block& genblock, const Matrix3D<double>& rot,  unsigned int nr_periods,  double spacing,  int N) {
   this->gen_halbach_cassette(genblock, rot, nr_periods, spacing, N);
 };
 
-HalbachCassette& HalbachCassette::set_x(const double& x) {
+HalbachCassette& HalbachCassette::set_x( double x) {
   for(auto i = 0; i != blocks.size(); i++) {
     blocks[i].set_pos().x = x;
   }
   return *this;
 }
 
-HalbachCassette& HalbachCassette::set_ycenter(const double& y) {
+HalbachCassette& HalbachCassette::set_ycenter( double y) {
   double ym = 0.5 * (this->blocks.front().get_pos().y + this->blocks.back().get_pos().y);
   this->shift_pos(Vector3D<double>(0,y - ym,0));
   return *this;
 }
 
-HalbachCassette& HalbachCassette::set_z(const double& z) {
+HalbachCassette& HalbachCassette::set_z( double z) {
   for(auto i = 0; i != blocks.size(); i++) {
     blocks[i].set_pos().z = z;
   }
   return *this;
+}
+
+Vector3D<double>& HalbachCassette::get_pos(){
+  Vector3D<double>& pos = this->blocks[0].get_pos();
+  double ym = 0.5 * (this->blocks.front().get_pos().y + this->blocks.back().get_pos().y);
+  pos.y = ym;
+  return pos;
+}
+
+Vector3D<double>& HalbachCassette::get_dim(){
+  Vector3D<double>& dim = this->blocks[0].get_dim();
+  double ylength = std::fabs(this->blocks.front().get_pos().y - this->blocks.back().get_pos().y);
+  dim.y = ylength;
+  return dim;
 }
