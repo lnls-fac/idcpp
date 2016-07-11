@@ -143,14 +143,31 @@ void FieldMap::read_fieldmap_from_file(const std::string& fname_, bool header, b
 
 }
 
-void FieldMap::change_y_sign(){
+void FieldMap::use_field_symmetry(bool bx_odd, bool by_odd, bool bz_odd){
 	this->y = -this->y;
-	for (int i=0; i < this->nx*this->nz; i+=1){
 
-		this->data[3*i+0] = -this->data[3*i+0];
-		this->data[3*i+1] =  this->data[3*i+1];
-		this->data[3*i+2] = -this->data[3*i+2];
+	int bx_symmetry = 1;
+	int by_symmetry = 1;
+	int bz_symmetry = 1;
+	if (bx_odd) { bx_symmetry = -1; }
+	if (by_odd) { by_symmetry = -1; }
+	if (bz_odd) { bz_symmetry = -1; }
+
+	double *new_data;
+	const size_t capacity_inc = 10 * 1000;
+	size_t capacity  = 0;
+	new_data = (double*) std::malloc(capacity*3*sizeof(double));
+
+	for (int i=0; i < this->nx*this->nz; i+=1){
+		if (i >= capacity) {
+			capacity += capacity_inc;
+			new_data = (double*) std::realloc(new_data, capacity*3*sizeof(double));
+		}
+		new_data[3*i+0] = bx_symmetry*this->data[3*i+0];
+		new_data[3*i+1] = by_symmetry*this->data[3*i+1];
+		new_data[3*i+2] = bz_symmetry*this->data[3*i+2];
 	}
+
 	this->calc_interpolant();
 }
 

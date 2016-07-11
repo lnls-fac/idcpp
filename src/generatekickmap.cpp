@@ -55,6 +55,10 @@ void read_input_file(std::string input_filename, bool& status, InputParameters& 
       inputs.mask_filename      = values.back(); values.pop_back();
       inputs.mask_shape_in_file = true;
       status = true;
+    } else if (nr_inputs == (10 + inputs.nr_fieldmaps)){
+      inputs.mask_height  = 0.0;
+      inputs.mask_width   = 0.0;
+      inputs.mask_shape   = "NONE";
     } else{
       std::cout << "Invalid number of input parameters!" << std::endl;
       status = false;
@@ -118,8 +122,7 @@ int main(int argc, char ** argv) {
 
   if (status){
 
-    bool use_field_simmetry = false;
-    FieldMapContainer fieldmaps(inputs.fieldmap_filenames, use_field_simmetry);
+    FieldMapContainer fieldmaps(inputs.fieldmap_filenames);
     InsertionDevice insertiondevice(fieldmaps);
 
     Grid grid(inputs.grid_nx, inputs.grid_ny, inputs.grid_xmin, inputs.grid_xmax, inputs.grid_ymin, inputs.grid_ymax);
@@ -128,8 +131,8 @@ int main(int argc, char ** argv) {
     if (inputs.mask_shape_in_file){ mask.load(inputs.mask_filename); }
     else { mask.load(inputs.mask_shape, inputs.mask_width, inputs.mask_height); }
 
-    KickMap kickmap(insertiondevice, grid, mask, inputs.energy, inputs.rkstep);
-    kickmap.write_kickmap(inputs.kickmap_filename);
+    insertiondevice.calc_kickmap(grid, mask, inputs.energy, inputs.rkstep);
+    insertiondevice.write_kickmap_file(inputs.kickmap_filename);
 
     clock_gettime(CLOCK_MONOTONIC, &finish);
     elapsed = (finish.tv_sec - start.tv_sec);

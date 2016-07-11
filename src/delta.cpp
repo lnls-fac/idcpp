@@ -1,7 +1,7 @@
 #include <cmath>
 #include <vector>
 #include <algorithm>
-#include <idmodel.h>
+#include <halbachcassette.h>
 
 void DELTA::gen_delta(Block& genblock,  unsigned int nr_periods,  double vertical_gap,  double horizontal_gap,  double block_separation){
   this->cs.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90n(), nr_periods, block_separation);

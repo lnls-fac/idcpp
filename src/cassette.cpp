@@ -1,5 +1,5 @@
 #include <vector>
-#include <idmodel.h>
+#include <halbachcassette.h>
 
 Vector3D<double> Container::get_field( Vector3D<double>& r)  {
   Vector3D<double> f;

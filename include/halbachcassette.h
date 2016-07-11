@@ -39,7 +39,7 @@ public:
   Vector3D<double>&      get_pos() { return subblocks[0].pos; }
   Vector3D<double>&      set_dim() { return subblocks[0].dim; }
   Vector3D<double>&      get_dim() { return subblocks[0].dim; }
-  Subblock               set_subblock(unsigned int i)       { return subblocks[i]; }
+  Subblock               set_subblock(unsigned int i)  { return subblocks[i]; }
   Subblock               get_subblock(unsigned int i)  { return subblocks[i]; }
 private:
   Vector3D<double>       mag;

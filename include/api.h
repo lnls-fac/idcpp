@@ -6,7 +6,7 @@
 #include <alglib/linalg.h>
 #include <alglib/interpolation.h>
 #include "vector3d.hpp"
-#include "idmodel.h"
+#include "halbachcassette.h"
 
 struct GridException {
 	enum type { inconsistent_dimensions = 0,};
@@ -17,7 +17,7 @@ struct MaskException {
 };
 
 struct FieldMapException {
-	enum type { inconsistent_dimensions = 0, file_not_found = 1, };
+	enum type { inconsistent_dimensions = 0, file_not_found = 1, field_symmetry = 2 };
 };
 
 class Grid {
@@ -89,9 +89,9 @@ public:
 	Vector3D<double> field(const Vector3D<double>& pos) const;
 	std::vector<Vector3D<double> > field(const std::vector<Vector3D<double> >& pos) const;
 
-	size_t           getid() const { return this->id; }
-	void             delete_data();
-	void 						 change_y_sign();
+	size_t  getid() const { return this->id; }
+	void    delete_data();
+	void    use_field_symmetry(bool bx_odd, bool by_odd, bool bz_odd);
 
 private:
 
@@ -100,6 +100,46 @@ private:
 	void read_fieldmap_from_file(const std::string& fname_, bool header, bool& consistent_dimensions);
 
 };
+
+
+class FieldMap3D {
+
+public:
+
+	size_t id;
+	size_t nx;
+	size_t ny;
+	size_t nz;
+	double x_min, dx, x_max;
+	double y_min, dy, y_max;
+	double z_min, dz, z_max;
+	double physical_length;
+	std::vector<double> x_grid;
+	std::vector<double> y_grid;
+	std::vector<double> z_grid;
+	double *data;
+	std::string fname;
+
+	FieldMap3D() {};
+	FieldMap3D(const std::string& fname_, size_t id_ = 0);
+	FieldMap3D(const FieldMap3D &obj);
+
+	Vector3D<double> field(const Vector3D<double>& pos) const;
+	std::vector<Vector3D<double> > field(const std::vector<Vector3D<double> >& pos) const;
+
+	size_t           getid() const { return this->id; }
+	void             delete_data();
+
+private:
+
+	std::vector<alglib::spline2dinterpolant> interpolants;
+	void get_y_data(std::vector<double>& y_data, int y_index);
+	void calc_interpolants();
+	void read_fieldmap_from_file(const std::string& fname_, bool header, bool& consistent_dimensions);
+	Vector3D<double> field2D(const Vector3D<double>& pos, int interpolant_index) const;
+
+};
+
 
 class FieldMapContainer {
 
@@ -116,16 +156,41 @@ public:
 
 	FieldMapContainer() {};
 	FieldMapContainer(FieldMap fieldmap);
+	FieldMapContainer(FieldMap3D fieldmap3D);
 	FieldMapContainer(std::vector<FieldMap> fieldmaps);
-  FieldMapContainer(std::vector<std::string> fieldmap_filenames, bool use_field_simmetry = false);
+	FieldMapContainer(std::string fieldmap_filename, bool fieldmap3D = false);
+  FieldMapContainer(std::vector<std::string> fieldmap_filenames, bool fieldmap3D = false);
 
 	Vector3D<double> field(const Vector3D<double>& pos) const;
 	std::vector<Vector3D<double> > field(const std::vector<Vector3D<double> >& pos) const;
 
+	void use_field_symmetry(bool bx_odd, bool by_odd, bool bz_odd);
+
 private:
 
   std::vector<FieldMap> fieldmaps;
+	FieldMap3D fieldmap3D;
 	void set_attributes();
+
+};
+
+class KickMap {
+
+public:
+
+	KickMap() {};
+	KickMap(double physical_length, std::vector<double> x, std::vector<double> y, std::vector<std::vector<double> > kick_x, std::vector<std::vector<double> > kicky);
+	void write_to_file(std::string filename);
+
+private:
+
+	double physical_length;
+	int nx;
+	int ny;
+	std::vector<double> x;
+	std::vector<double> y;
+	std::vector<std::vector<double> > kick_x;
+	std::vector<std::vector<double> > kick_y;
 
 };
 
@@ -140,7 +205,8 @@ public:
 	double z_min;
 	double z_max;
 	double physical_length;
-
+	KickMap kickmap;
+	
 	InsertionDevice() {};
 	InsertionDevice(FieldMap& fieldmap);
 	InsertionDevice(std::vector<FieldMap>& fieldmaps);
@@ -149,9 +215,13 @@ public:
 	InsertionDevice(DELTA& delta);
 
 	Vector3D<double> field(Vector3D<double>& pos);
+	std::vector<Vector3D<double> > field(std::vector<Vector3D<double> >& pos);
 
 	void write_fieldmap_file(std::string filename, std::vector<double> x_vector, double y, std::vector<double> z_vector);
 	void write_fieldmap_files(std::string filename, std::vector<double> x_vector, std::vector<double> y_vector, std::vector<double> z_vector);
+	void write_fieldmap3D_file(std::string filename, std::vector<double> x_vector, std::vector<double> y_vector, std::vector<double> z_vector);
+	void calc_kickmap(Grid grid, Mask mask, double energy, double runge_kutta_step);
+	void write_kickmap_file(std::string filename);
 
 private:
 
@@ -162,28 +232,8 @@ private:
 
 };
 
-class KickMap {
-
-public:
-
-	KickMap(InsertionDevice& insertiondevice, Grid grid, Mask mask, double energy, double runge_kutta_step);
-	void write_kickmap(std::string filename);
-
-private:
-
-	InsertionDevice insertiondevice;
-  Grid grid;
-  Mask mask;
-  double energy;
-  double runge_kutta_step;
-
-	std::vector<std::vector<double> > kick_x;
-	std::vector<std::vector<double> > kick_y;
-
-	void calc_kicks();
-
-};
-
+void calc_brho(double energy, double& brho, double& beta);
+void newton_lorentz_equation(double alpha, Vector3D<> r, Vector3D<> p,  Vector3D<> b, Vector3D<>& dr_ds, Vector3D<>& dp_ds);
 void runge_kutta(InsertionDevice& insertiondevice, double brho, double beta, double zmax, double step, Mask mask, Vector3D<> r, Vector3D<> p, Vector3D<>& kicks);
 
 #endif

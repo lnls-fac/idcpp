@@ -1,6 +1,6 @@
 #include <vector>
 #include <algorithm>
-#include <idmodel.h>
+#include <halbachcassette.h>
 
 void EPU::gen_epu(Block& genblock,  unsigned int nr_periods,  double magnetic_gap,  double cassette_separation,  double block_separation){
   this->csd.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90n(), nr_periods, block_separation);

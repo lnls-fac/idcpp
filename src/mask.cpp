@@ -6,7 +6,7 @@
 #include <map>
 #include <api.h>
 
-enum Shape{ SQUARE, RECTANGLE, DIAMOND, CIRCLE, ELLIPSE, TABLE };
+enum Shape{ SQUARE, RECTANGLE, DIAMOND, CIRCLE, ELLIPSE, TABLE, NONE};
 std::map<std::string, Shape> shapes;
 
 void defined_shapes(){
@@ -14,9 +14,10 @@ void defined_shapes(){
   shapes["DIAMOND"]   = DIAMOND;
   shapes["ELLIPSE"]   = ELLIPSE;
   shapes["TABLE"]     = TABLE;
+  shapes["NONE"]      = NONE;
 }
 
-Mask::Mask(std::string shape, double width, double height){ this->load(shape, width, height); }
+Mask::Mask(std::string shape, double width=0.0, double height=0.0){ this->load(shape, width, height); }
 
 Mask::Mask(std::string filename){ this->load(filename); }
 
@@ -94,6 +95,9 @@ bool Mask::is_inside(Vector3D<> position) const{
       break;
     case ELLIPSE:
       inside = (pow((pos_x/(this->width/2.0)), 2.0) + pow((pos_y/(this->height/2.0)), 2.0) <= 1.0) ? true : false;
+      break;
+    case NONE:
+      inside = true;
       break;
     case TABLE:
       double x_min = *std::min_element(this->x.begin(), this->x.end());

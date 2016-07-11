@@ -3,6 +3,15 @@
 #include <cmath>
 #include <api.h>
 
+static const double electron_rest_energy = 510998.92811;  // [eV]
+static const double light_speed          = 299792458;     // [m/s]
+
+void calc_brho(double energy, double& brho, double& beta){
+  double gamma = energy / electron_rest_energy;
+  beta  = std::sqrt(1.0 - 1.0 / (gamma * gamma));
+  brho  = (beta * energy / light_speed);
+}
+
 void newton_lorentz_equation(double alpha, Vector3D<> r, Vector3D<> p,  Vector3D<> b, Vector3D<>& dr_ds, Vector3D<>& dp_ds){
 
   dr_ds.x = p.x;

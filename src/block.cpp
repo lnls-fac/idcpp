@@ -1,6 +1,6 @@
 #include <cmath>
 #include <vector>
-#include <idmodel.h>
+#include <halbachcassette.h>
 
 Matrix3D<double> Block::get_gmatrix( Vector3D<double> r)  {
   Matrix3D<double> m;

@@ -65,6 +65,7 @@ ALGLIBSRC_CPP  = 	ap.cpp \
 									specialfunctions.cpp \
 
 LIBSOURCES_CPP = 	fieldmap.cpp \
+									fieldmap3d.cpp \
 									fieldmapcontainer.cpp \
 									rungekutta.cpp \
 									grid.cpp \
