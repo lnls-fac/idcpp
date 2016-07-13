@@ -1,13 +1,19 @@
 #include <cmath>
 #include <vector>
 #include <algorithm>
-#include <halbachcassette.h>
+#include <api.h>
 
 void DELTA::gen_delta(Block& genblock,  unsigned int nr_periods,  double vertical_gap,  double horizontal_gap,  double block_separation){
-  this->cs.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90n(), nr_periods, block_separation);
-  this->ci.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90n(), nr_periods, block_separation);
-  this->ce.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90p(), nr_periods, block_separation);
-  this->cd.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90p(), nr_periods, block_separation);
+  this->nr_periods = nr_periods;
+  this->vertical_gap = vertical_gap;
+  this->horizontal_gap = horizontal_gap;
+  this->block_separation = block_separation;
+
+  this->cs.gen_halbach_cassette(genblock, Matrix3D<double>::rotx90n(), nr_periods, block_separation);
+  this->cd.gen_halbach_cassette(genblock, Matrix3D<double>::rotx90n(), nr_periods, block_separation);
+  this->ci.gen_halbach_cassette(genblock, Matrix3D<double>::rotx90p(), nr_periods, block_separation);
+  this->ce.gen_halbach_cassette(genblock, Matrix3D<double>::rotx90p(), nr_periods, block_separation);
+
 
   Vector3D<double> dim = genblock.get_dim();
 
@@ -32,6 +38,17 @@ void DELTA::gen_delta(Block& genblock,  unsigned int nr_periods,  double vertica
 DELTA::DELTA(Block& genblock,  unsigned int nr_periods,  double vertical_gap,  double horizontal_gap,  double block_separation){
   this->gen_delta(genblock, nr_periods, vertical_gap, horizontal_gap, block_separation);
 };
+
+DELTA::DELTA(const DELTA &obj){
+  this->nr_periods = obj.nr_periods;
+  this->vertical_gap = obj.vertical_gap;
+  this->horizontal_gap = obj.horizontal_gap;
+  this->block_separation = obj.block_separation;
+  this->cs = obj.cs;
+  this->ci = obj.ci;
+  this->ce = obj.ce;
+  this->cd = obj.cd;
+}
 
 Vector3D<double> DELTA::field( Vector3D<double>& pos)  {
   Vector3D<double> field;

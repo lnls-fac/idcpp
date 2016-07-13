@@ -1,19 +1,6 @@
 #include <cmath>
 #include <vector>
-#include <halbachcassette.h>
-
-Matrix3D<double> Block::get_gmatrix( Vector3D<double> r)  {
-  Matrix3D<double> m;
-  for(std::vector<Subblock>::size_type i = 0; i != subblocks.size(); i++) {
-    m = subblocks[i].get_gmatrix(r);
-  }
-  return m;
-}
-
-Vector3D<double> Block::get_field( Vector3D<double> r)  {
-  return this->get_gmatrix(r) * this->mag;
-}
-
+#include <api.h>
 
 Matrix3D<double> Subblock::get_gmatrix( Vector3D<double> r)  {
   double x[] = {pos.x - r.x - dim.x/2, pos.x - r.x + dim.x/2};
@@ -39,4 +26,34 @@ Matrix3D<double> Subblock::get_gmatrix( Vector3D<double> r)  {
   return Matrix3D<double>(Vector3D<double>(c*gxx,c*gxy,c*gxz),
                     Vector3D<double>(c*gxy,c*gyy,c*gyz),
                     Vector3D<double>(c*gxz,c*gyz,c*gzz));
+}
+
+
+Matrix3D<double> Block::get_gmatrix( Vector3D<double> r)  {
+  Matrix3D<double> m;
+  for(std::vector<Subblock>::size_type i = 0; i != subblocks.size(); i++) {
+    m = subblocks[i].get_gmatrix(r);
+  }
+  return m;
+}
+
+
+Vector3D<double> Block::get_field( Vector3D<double> r)  {
+  return this->get_gmatrix(r) * this->mag;
+}
+
+void Block::set_mag(Vector3D<double> mag_){
+  this->mag = mag_;
+}
+
+void Block::set_pos(Vector3D<double> pos_){
+  this->subblocks[0].pos = pos_;
+}
+
+void Block::set_dim(Vector3D<double> dim_){
+  this->subblocks[0].dim = dim_;
+}
+
+void Block::set_subblock(unsigned int i, Subblock subblock){
+  this->subblocks[i] = subblock;
 }

@@ -34,7 +34,6 @@ public:
   static const Matrix3D<T> rotz90n() {return Matrix3D<T>(Vector3D<T>(0.0,+1.0,0.0),Vector3D<T>(-1.0,0.0,0.0),Vector3D<T>(0.0,0.0,+1.0));}
 
 private:
-
   Vector3D<T> vx;
   Vector3D<T> vy;
   Vector3D<T> vz;

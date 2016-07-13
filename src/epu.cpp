@@ -1,8 +1,13 @@
 #include <vector>
 #include <algorithm>
-#include <halbachcassette.h>
+#include <api.h>
 
 void EPU::gen_epu(Block& genblock,  unsigned int nr_periods,  double magnetic_gap,  double cassette_separation,  double block_separation){
+  this->nr_periods = nr_periods;
+  this->magnetic_gap = magnetic_gap;
+  this->cassette_separation = cassette_separation;
+  this->block_separation = block_separation;
+
   this->csd.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90n(), nr_periods, block_separation);
   this->cse.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90n(), nr_periods, block_separation);
   this->cid.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90p(), nr_periods, block_separation);
@@ -29,6 +34,17 @@ void EPU::gen_epu(Block& genblock,  unsigned int nr_periods,  double magnetic_ga
 EPU::EPU(Block& genblock,  unsigned int nr_periods,  double magnetic_gap,  double cassette_separation,  double block_separation){
   this->gen_epu(genblock, nr_periods, magnetic_gap, cassette_separation, block_separation);
 };
+
+EPU::EPU(const EPU &obj){
+  this->nr_periods = obj.nr_periods;
+  this->magnetic_gap = obj.magnetic_gap;
+  this->cassette_separation = obj.cassette_separation;
+  this->block_separation = obj.block_separation;
+  this->csd = obj.csd;
+  this->cse = obj.cse;
+  this->cid = obj.cid;
+  this->cie = obj.cie;
+}
 
 Vector3D<double> EPU::field( Vector3D<double>& pos)  {
   Vector3D<double> field;

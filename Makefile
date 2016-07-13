@@ -67,10 +67,9 @@ ALGLIBSRC_CPP  = 	ap.cpp \
 LIBSOURCES_CPP = 	fieldmap.cpp \
 									fieldmap3d.cpp \
 									fieldmapcontainer.cpp \
-									rungekutta.cpp \
+									functions.cpp \
 									grid.cpp \
 									mask.cpp \
-									kickmap.cpp \
 									block.cpp \
 									cassette.cpp \
 									delta.cpp \

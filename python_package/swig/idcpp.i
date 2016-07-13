@@ -2,7 +2,6 @@
 
 %{
     #include "api.h"
-    #include "halbachcassette.h"
     #include "vector3d.hpp"
     #include "matrix3d.h"
 %}
@@ -11,7 +10,6 @@
 %include "std_vector.i"
 
 %include "api.h"
-%include "halbachcassette.h"
 %include "vector3d.hpp"
 %include "matrix3d.h"
 
