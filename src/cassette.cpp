@@ -99,7 +99,7 @@ HalbachCassette& HalbachCassette::set_x( double x) {
 
 HalbachCassette& HalbachCassette::set_zcenter( double z) {
   double zm = 0.5 * (this->blocks.front().get_pos().z + this->blocks.back().get_pos().z);
-  this->shift_pos(Vector3D<double>(0.0, z - zm, 0.0));
+  this->shift_pos(Vector3D<double>(0.0, 0.0, z - zm));
   return *this;
 }
 
