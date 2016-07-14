@@ -9,18 +9,15 @@
 #include "matrix3d.h"
 
 
-struct GridException {
-	enum type { inconsistent_dimensions = 0,};
-};
-
-
-struct MaskException {
-  enum type { file_not_found = 0, undefined_shape = 1 };
-};
-
-
-struct FieldMapException {
-	enum type { inconsistent_dimensions = 0, file_not_found = 1, field_symmetry = 2 };
+struct InsertionDeviceException {
+    enum type {
+        success = 0,
+        inconsistent_dimensions = 1,
+        file_not_found = 2,
+        invalid_magnetization = 3,
+				invalid_shape = 4,
+				field_symmetry_error = 5,
+    };
 };
 
 
@@ -66,7 +63,7 @@ public:
   Container() {}
   Container& add_element(Block& b) { blocks.push_back(b); return *this; }
   Vector3D<double> get_field( Vector3D<double>& r) ;
-  std::vector<Vector3D<double> > get_field( std::vector<Vector3D<double> >& rvec) ;
+  std::vector<Vector3D<double> > get_field( std::vector<Vector3D<double> >& r) ;
   int size() { return blocks.size(); }
   Block& get_item(int i) { return blocks[i]; }
   Container& shift_pos( Vector3D<double> dr);
@@ -85,8 +82,8 @@ public:
 
 	void gen_halbach_cassette(Block& genblock, const Matrix3D<double>& rot,  unsigned int nr_periods,  double spacing=0.0,  int N=4);
   HalbachCassette& 				set_x(double x);
-  HalbachCassette& 				set_ycenter( double y=0.0);
-  HalbachCassette& 				set_z(double z);
+  HalbachCassette& 				set_zcenter( double z=0.0);
+  HalbachCassette& 				set_y(double y);
   Vector3D<double> 				get_pos();
   Vector3D<double> 				get_dim();
 	Block&           				get_genblock() { return blocks[0];}
@@ -99,7 +96,6 @@ private:
 	double spacing;
 	int N;
 };
-
 
 class EPU {
 public:

@@ -9,7 +9,7 @@ FieldMapContainer::FieldMapContainer(std::vector<std::string> fieldmap_filenames
 
   if ((fieldmap3D) && (fieldmap_filenames.size() != 1)){
 
-    throw FieldMapException::inconsistent_dimensions;
+    throw InsertionDeviceException::inconsistent_dimensions;
 
   } else if ((fieldmap3D) && (fieldmap_filenames.size() == 1)){
 
@@ -18,9 +18,9 @@ FieldMapContainer::FieldMapContainer(std::vector<std::string> fieldmap_filenames
       FieldMap3D fieldmap3D(filename.c_str());
       this->fieldmap3D = fieldmap3D;
       std::cout << "Load " << filename << std::endl;
-    } catch(FieldMapException::type e){
-      if (e == 1) { std::cout << "File not found: " << filename << std::endl << std::endl; }
-      throw;
+    } catch(InsertionDeviceException::type e){
+      if (e == 2) { std::cout << "File not found: " << filename << std::endl << std::endl; }
+      throw InsertionDeviceException::file_not_found;
     }
     this->nr_fieldmaps = 0;
     this->x_min = this->fieldmap3D.x_min;
@@ -45,9 +45,9 @@ FieldMapContainer::FieldMapContainer(std::vector<std::string> fieldmap_filenames
         this->fieldmaps.push_back(fieldmap);
         std::cout << "Load " << filename << ":  y = " << fieldmap.y << std::endl;
         nr_fieldmaps +=1;
-      } catch(FieldMapException::type e){
+      } catch(InsertionDeviceException::type e){
         if (e == 1) { std::cout << "File not found: " << filename << std::endl << std::endl; }
-        throw;
+        throw InsertionDeviceException::file_not_found;
       }
     }
     this->set_attributes();
@@ -62,9 +62,9 @@ FieldMapContainer::FieldMapContainer(std::string fieldmap_filename, bool fieldma
       FieldMap fieldmap(fieldmap_filename.c_str());
       this->fieldmaps.push_back(fieldmap);
       std::cout << "Load " << fieldmap_filename << ":  y = " << fieldmap.y << std::endl;
-    } catch(FieldMapException::type e){
-      if (e == 1) { std::cout << "File not found: " << fieldmap_filename << std::endl << std::endl; }
-      throw;
+    } catch(InsertionDeviceException::type e){
+      if (e == 2) { std::cout << "File not found: " << fieldmap_filename << std::endl << std::endl; }
+      throw InsertionDeviceException::file_not_found;
     }
     this->set_attributes();
   } else {
@@ -72,9 +72,9 @@ FieldMapContainer::FieldMapContainer(std::string fieldmap_filename, bool fieldma
       FieldMap3D fieldmap3D(fieldmap_filename.c_str());
       this->fieldmap3D = fieldmap3D;
       std::cout << "Load " << fieldmap_filename << std::endl;
-    } catch(FieldMapException::type e){
-      if (e == 1) { std::cout << "File not found: " << fieldmap_filename << std::endl << std::endl; }
-      throw;
+    } catch(InsertionDeviceException::type e){
+      if (e == 2) { std::cout << "File not found: " << fieldmap_filename << std::endl << std::endl; }
+      throw InsertionDeviceException::file_not_found;
     }
     this->nr_fieldmaps = 0;
     this->x_min = this->fieldmap3D.x_min;
@@ -136,7 +136,7 @@ void FieldMapContainer::set_attributes(){
 void FieldMapContainer::use_field_symmetry(bool bx_odd, bool by_odd, bool bz_odd){
   std::vector<FieldMap> new_fieldmaps;
 
-  if (this->nr_fieldmaps == 0){ throw FieldMapException::field_symmetry; }
+  if (this->nr_fieldmaps == 0){ throw InsertionDeviceException::field_symmetry_error; }
 
   int negative_count = 0; int positive_count = 0; int zero_count = 0;
   for (int i=0; i < this->nr_fieldmaps; i+=1){
@@ -145,7 +145,7 @@ void FieldMapContainer::use_field_symmetry(bool bx_odd, bool by_odd, bool bz_odd
     else if (this->fieldmaps[i].y == 0) { zero_count +=1;}
   }
   if (((negative_count+zero_count)!= this->nr_fieldmaps) && ((positive_count+zero_count)!= this->nr_fieldmaps)){
-    throw FieldMapException::field_symmetry;
+    throw InsertionDeviceException::field_symmetry_error;
   }
 
   for (int i = (this->nr_fieldmaps -1); i >= 0; i-=1){

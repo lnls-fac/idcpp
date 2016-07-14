@@ -34,7 +34,7 @@ void Mask::load(std::string shape, double width, double height){
   std::transform(shape.begin(), shape.end(), shape.begin(), ::toupper);
   defined_shapes();
 
-  if (shapes.find(shape) == shapes.end()) throw MaskException::undefined_shape;
+  if (shapes.find(shape) == shapes.end()) throw InsertionDeviceException::invalid_shape;
 
   this->shape = shape;
   this->width = width;
@@ -43,7 +43,7 @@ void Mask::load(std::string shape, double width, double height){
 
 void Mask::load(std::string filename){
   std::ifstream file(filename.c_str());
-  if (!file.is_open()) throw MaskException::file_not_found;
+  if (!file.is_open()) throw InsertionDeviceException::file_not_found;
 
   std::vector<double> x; std::vector<double> y;
   double x_value; double y_value;

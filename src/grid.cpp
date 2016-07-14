@@ -2,8 +2,7 @@
 #include <api.h>
 
 Grid::Grid(int nx, int ny, double x_max, double y_max){
-  //symmetrical grid
-
+  
   this->nx = nx;
   this->ny = ny;
   this->x_max = x_max;
@@ -33,8 +32,8 @@ Grid::Grid(int nx, int ny, double x_max, double y_max){
 
 Grid::Grid(int nx, int ny, double x_min, double x_max, double y_min, double y_max){
 
-  if (nx == 1 && x_min != x_max){throw GridException::inconsistent_dimensions; }
-  if (ny == 1 && y_min != y_max){throw GridException::inconsistent_dimensions; }
+  if (nx == 1 && x_min != x_max){throw InsertionDeviceException::inconsistent_dimensions; }
+  if (ny == 1 && y_min != y_max){throw InsertionDeviceException::inconsistent_dimensions; }
 
   this->nx = nx;
   this->ny = ny;

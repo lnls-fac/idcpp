@@ -27,7 +27,7 @@ FieldMap3D::FieldMap3D(const std::string& fname_, size_t id_) :
 	}
 
 	// throws exception in case dimensions do not agree
-	if (!consistent_dimensions) { throw FieldMapException::inconsistent_dimensions; }
+	if (!consistent_dimensions) { throw InsertionDeviceException::inconsistent_dimensions; }
 
 	calc_interpolants();
 }
@@ -65,7 +65,7 @@ void FieldMap3D::read_fieldmap_from_file(const std::string& fname_, bool header,
 
 	// opens file
 	std::ifstream file(fname_.c_str());
-	if (!file.is_open()) throw FieldMapException::file_not_found;
+	if (!file.is_open()) throw InsertionDeviceException::file_not_found;
 
 	std::string word, line;
 	if (header){

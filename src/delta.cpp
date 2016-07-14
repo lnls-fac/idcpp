@@ -14,24 +14,23 @@ void DELTA::gen_delta(Block& genblock,  unsigned int nr_periods,  double vertica
   this->ci.gen_halbach_cassette(genblock, Matrix3D<double>::rotx90p(), nr_periods, block_separation);
   this->ce.gen_halbach_cassette(genblock, Matrix3D<double>::rotx90p(), nr_periods, block_separation);
 
-
   Vector3D<double> dim = genblock.get_dim();
 
   this->cs.set_x(0.0);
-  this->cs.set_z(+(vertical_gap + dim.z)/2.0);
-  this->cs.set_ycenter(0.0);
+  this->cs.set_y(+(vertical_gap + dim.y)/2.0);
+  this->cs.set_zcenter(0.0);
 
   this->ci.set_x(0.0);
-  this->ci.set_z(-(vertical_gap + dim.z)/2.0);
-  this->ci.set_ycenter(0.0);
+  this->ci.set_y(-(vertical_gap + dim.y)/2.0);
+  this->ci.set_zcenter(0.0);
 
   this->cd.set_x(+(horizontal_gap + dim.x)/2.0);
-  this->cd.set_z(0.0);
-  this->cd.set_ycenter(0.0);
+  this->cd.set_y(0.0);
+  this->cd.set_zcenter(0.0);
 
   this->ce.set_x(-(horizontal_gap + dim.x)/2.0);
-  this->ce.set_z(0.0);
-  this->ce.set_ycenter(0.0);
+  this->ce.set_y(0.0);
+  this->ce.set_zcenter(0.0);
 
 }
 
@@ -65,11 +64,11 @@ Vector3D<double> DELTA::field( Vector3D<double>& pos)  {
 }
 
 void DELTA::set_phase_cs( double phase){
-  this->cs.set_ycenter(phase);
+  this->cs.set_zcenter(phase);
 }
 
 void DELTA::set_phase_ci( double phase){
-  this->ci.set_ycenter(phase);
+  this->ci.set_zcenter(phase);
 }
 
 double DELTA::get_x_min(){
@@ -133,6 +132,6 @@ double DELTA::get_z_max(){
 }
 
 double DELTA::get_physical_length(){
-  double physical_length = std::fabs(this->get_y_max() - this->get_y_min());
+  double physical_length = std::fabs(this->get_z_max() - this->get_z_min());
   return physical_length;
 }

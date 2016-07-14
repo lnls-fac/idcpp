@@ -8,27 +8,39 @@ void EPU::gen_epu(Block& genblock,  unsigned int nr_periods,  double magnetic_ga
   this->cassette_separation = cassette_separation;
   this->block_separation = block_separation;
 
-  this->csd.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90n(), nr_periods, block_separation);
-  this->cse.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90n(), nr_periods, block_separation);
-  this->cid.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90p(), nr_periods, block_separation);
-  this->cie.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90p(), nr_periods, block_separation);
+  Vector3D<> mag = genblock.get_mag();
+  if ((mag.x ==0) && (mag.y == 0) && (mag.z != 0)){
+    this->csd.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90p(), nr_periods, block_separation);
+    this->cse.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90p(), nr_periods, block_separation);
+    genblock.set_mag(Vector3D<>(mag.x, mag.y, -mag.z));
+    std::cout << genblock.get_mag() << std::endl;
+    this->cid.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90n(), nr_periods, block_separation);
+    this->cie.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90n(), nr_periods, block_separation);
+  } else if ((mag.x ==0) && (mag.y != 0) && (mag.z == 0)){
+    this->csd.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90p(), nr_periods, block_separation);
+    this->cse.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90p(), nr_periods, block_separation);
+    this->cid.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90n(), nr_periods, block_separation);
+    this->cie.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90n(), nr_periods, block_separation);
+  } else {
+    throw InsertionDeviceException::invalid_magnetization;
+  }
 
   Vector3D<double> dim = genblock.get_dim();
   this->csd.set_x(+(cassette_separation + dim.x)/2.0);
-  this->csd.set_z(+(magnetic_gap + dim.z)/2.0);
-  this->csd.set_ycenter(0.0);
+  this->csd.set_y(+(magnetic_gap + dim.y)/2.0);
+  this->csd.set_zcenter(0.0);
 
   this->cse.set_x(-(cassette_separation + dim.x)/2.0);
-  this->cse.set_z(+(magnetic_gap + dim.z)/2.0);
-  this->cse.set_ycenter(0.0);
+  this->cse.set_y(+(magnetic_gap + dim.y)/2.0);
+  this->cse.set_zcenter(0.0);
 
   this->cie.set_x(-(cassette_separation + dim.x)/2.0);
-  this->cie.set_z(-(magnetic_gap + dim.z)/2.0);
-  this->cie.set_ycenter(0.0);
+  this->cie.set_y(-(magnetic_gap + dim.y)/2.0);
+  this->cie.set_zcenter(0.0);
 
   this->cid.set_x(+(cassette_separation + dim.x)/2.0);
-  this->cid.set_z(-(magnetic_gap + dim.z)/2.0);
-  this->cid.set_ycenter(0.0);
+  this->cid.set_y(-(magnetic_gap + dim.y)/2.0);
+  this->cid.set_zcenter(0.0);
 }
 
 EPU::EPU(Block& genblock,  unsigned int nr_periods,  double magnetic_gap,  double cassette_separation,  double block_separation){
@@ -56,11 +68,11 @@ Vector3D<double> EPU::field( Vector3D<double>& pos)  {
 }
 
 void EPU::set_phase_csd( double phase){
-  this->csd.set_ycenter(phase);
+  this->csd.set_zcenter(phase);
 }
 
 void EPU::set_phase_cie( double phase){
-  this->cie.set_ycenter(phase);
+  this->cie.set_zcenter(phase);
 }
 
 double EPU::get_x_min(){
@@ -124,6 +136,6 @@ double EPU::get_z_max(){
 }
 
 double EPU::get_physical_length(){
-  double physical_length = std::fabs(this->get_y_max() - this->get_y_min());
+  double physical_length = std::fabs(this->get_z_max() - this->get_z_min());
   return physical_length;
 }
