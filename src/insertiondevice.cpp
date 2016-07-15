@@ -2,90 +2,69 @@
 #include <sstream>
 #include <fstream>
 #include <iomanip>
-#include <algorithm>
 #include <ctime>
 #include <api.h>
 
-KickMap::KickMap(double physical_length, std::vector<double> x, std::vector<double> y, std::vector<std::vector<double> > kick_x, std::vector<std::vector<double> > kick_y){
-  this->physical_length = physical_length;
-  this->nx = x.size();
-  this->ny = y.size();
-  this->x = x;
-  this->y = y;
-  this->kick_x = kick_x;
-  this->kick_y = kick_y;
-}
-
-void KickMap::write_to_file(std::string filename){
-  _write_kickmap_file(filename, this->physical_length, this->x, this->y, this->kick_x, this->kick_y);
-}
-
-
 InsertionDevice::InsertionDevice(FieldMapContainer& fieldmap_container){
-  this->fieldmaps = fieldmap_container;
-  this->x_min = this->fieldmaps.x_min;
-  this->x_max = this->fieldmaps.x_max;
-  this->y_min = this->fieldmaps.y_min;
-  this->y_max = this->fieldmaps.y_max;
-  this->z_min = float(this->fieldmaps.z_min);
-  this->z_max = float(this->fieldmaps.z_max);
-  this->physical_length = this->fieldmaps.physical_length;
-  this->type = 0;
+  this->fieldmaps = fieldmap_container; this->type = 0; this->set_attributes();
 }
 
 InsertionDevice::InsertionDevice(FieldMap& fieldmap){
-  FieldMapContainer fieldmap_container(fieldmap);
-  this->fieldmaps = fieldmap_container;
-  this->x_min = this->fieldmaps.x_min;
-  this->x_max = this->fieldmaps.x_max;
-  this->y_min = this->fieldmaps.y_min;
-  this->y_max = this->fieldmaps.y_max;
-  this->z_min = this->fieldmaps.z_min;
-  this->z_max = this->fieldmaps.z_max;
-  this->physical_length = this->fieldmaps.physical_length;
-  this->type = 0;
+  this->fieldmaps = FieldMapContainer(fieldmap); this->type = 0; this->set_attributes();
 }
 
 InsertionDevice::InsertionDevice(std::vector<FieldMap>& fieldmaps){
-  FieldMapContainer fieldmap_container(fieldmaps);
-  this->fieldmaps = fieldmap_container;
-  this->x_min = this->fieldmaps.x_min;
-  this->x_max = this->fieldmaps.x_max;
-  this->y_min = this->fieldmaps.y_min;
-  this->y_max = this->fieldmaps.y_max;
-  this->z_min = this->fieldmaps.z_min;
-  this->z_max = this->fieldmaps.z_max;
-  this->physical_length = this->fieldmaps.physical_length;
-  this->type = 0;
+  this->fieldmaps = FieldMapContainer(fieldmaps); this->type = 0; this->set_attributes();
 }
 
-InsertionDevice::InsertionDevice(EPU& epu){
-  this->epu = epu;
-  this->x_min = this->epu.get_x_min();
-  this->x_max = this->epu.get_x_max();
-  this->y_min = this->epu.get_y_min();
-  this->y_max = this->epu.get_y_max();
-  this->z_min = this->epu.get_z_min();
-  this->z_max = this->epu.get_z_max();
-  this->physical_length = this->epu.get_physical_length();
-  this->type = 1;
+InsertionDevice::InsertionDevice(CassetteContainer& cassette_container){
+  this->cassettes = cassette_container; this->type = 1; this->set_attributes();
 }
 
-InsertionDevice::InsertionDevice(DELTA& delta){
-  this->delta = delta;
-  this->x_min = this->delta.get_x_min();
-  this->x_max = this->delta.get_x_max();
-  this->y_min = this->delta.get_y_min();
-  this->y_max = this->delta.get_y_max();
-  this->z_min = this->delta.get_z_min();
-  this->z_max = this->delta.get_z_max();
-  this->physical_length = this->delta.get_physical_length();
-  this->type = 2;
+InsertionDevice::InsertionDevice(HalbachCassette& cassette){
+  this->cassettes = CassetteContainer(cassette); this->type = 1; this->set_attributes();
+}
+
+InsertionDevice::InsertionDevice(std::vector<HalbachCassette>& cassettes){
+  this->cassettes = CassetteContainer(cassettes); this->type = 1; this->set_attributes();
 }
 
 InsertionDevice::InsertionDevice(Vector3D<> (*function)(Vector3D<>)){
-  this->field_function = function;
-  this->type = 3;
+  this->field_function = function; this->type = 2;
+}
+
+InsertionDevice::InsertionDevice(const InsertionDevice &obj){
+  this->fieldmaps = obj.fieldmaps;
+  this->cassettes = obj.cassettes;
+  this->field_function = obj.field_function;
+  this->type = obj.type;
+  this->x_min = obj.x_min;
+  this->x_max = obj.x_max;
+  this->y_min = obj.y_min;
+  this->y_max = obj.y_max;
+  this->z_min = obj.z_min;
+  this->z_max = obj.z_max;
+  this->physical_length = obj.physical_length;
+}
+
+void InsertionDevice::set_attributes(){
+  if (this->type == 0){
+    this->x_min = this->fieldmaps.x_min;
+    this->x_max = this->fieldmaps.x_max;
+    this->y_min = this->fieldmaps.y_min;
+    this->y_max = this->fieldmaps.y_max;
+    this->z_min = this->fieldmaps.z_min;
+    this->z_max = this->fieldmaps.z_max;
+    this->physical_length = this->fieldmaps.physical_length;
+  } else if (this->type == 1){
+    this->x_min = this->cassettes.get_x_min();
+    this->x_max = this->cassettes.get_x_max();
+    this->y_min = this->cassettes.get_y_min();
+    this->y_max = this->cassettes.get_y_max();
+    this->z_min = this->cassettes.get_z_min();
+    this->z_max = this->cassettes.get_z_max();
+    this->physical_length = this->cassettes.get_physical_length();
+  }
 }
 
 Vector3D<double> InsertionDevice::field( Vector3D<double>& pos) {
@@ -93,10 +72,8 @@ Vector3D<double> InsertionDevice::field( Vector3D<double>& pos) {
   if (this->type == 0){
     field = this->fieldmaps.field(pos);
   } else if (this->type == 1){
-    field = this->epu.field(pos);
+    field = this->cassettes.field(pos);
   } else if (this->type == 2){
-    field = this->delta.field(pos);
-  } else if (this->type == 3){
     field = this->field_function(pos);
   }
   return field;
@@ -110,35 +87,88 @@ std::vector<Vector3D<double> > InsertionDevice::field(std::vector<Vector3D<doubl
   return field;
 }
 
-void InsertionDevice::calc_kickmap(Grid grid, Mask mask, double energy, double runge_kutta_step){
-  KickMap kickmap;
-  std::vector<std::vector<std::vector<double> > > trajectories;
-  _calc_kickmap(*this, grid, mask, energy, runge_kutta_step, this->z_min, this->z_max, this->physical_length, kickmap, trajectories);
-  this->kickmap = kickmap;
+void InsertionDevice::calc_trajectory(double brho, double beta, double runge_kutta_step, Mask& mask, Vector3D<> r, Vector3D<> p, std::vector<std::vector<double> >& trajectory){
+  runge_kutta(*this, brho, beta, runge_kutta_step, mask, r, p, trajectory);
 }
 
-void InsertionDevice::calc_kickmap(Grid grid, Mask mask, double energy, double runge_kutta_step, std::string trajectories_filename){
-  KickMap kickmap;
-  std::vector<std::vector<std::vector<double> > > trajectories;
-  _calc_kickmap(*this, grid, mask, energy, runge_kutta_step, this->z_min, this->z_max, this->physical_length, kickmap, trajectories);
-  this->kickmap = kickmap;
-  save_trajectories(trajectories_filename, trajectories);
+void InsertionDevice::calc_kickmap(Grid grid, Mask mask, double energy, double runge_kutta_step, KickMap& kickmap){
+  double beta; double brho;
+  calc_brho(energy, brho, beta);
+
+  int count = 0;
+  int size = grid.nx * grid.ny;
+  Vector3D<> r(0.0, 0.0, this->z_min);
+  Vector3D<> p(0.0, 0.0, 1.0);
+  Vector3D<> kick;
+
+  std::cout << std::endl << "Calculating kickmap..." << std::endl;
+
+  std::vector<double> kick_x_vector;
+  std::vector<double> kick_y_vector;
+  std::vector<std::vector<double> > kick_x;
+	std::vector<std::vector<double> > kick_y;
+
+  for(int i = 0; i < grid.ny; i+=1){
+    for(int j =0; j < grid.nx; j+=1){
+      r.x = grid.x[j]; r.y = grid.y[i];
+      runge_kutta(*this, brho, beta, runge_kutta_step, mask, r, p, kick);
+      kick_x_vector.push_back(kick.x );
+      kick_y_vector.push_back(kick.y);
+
+      count += 1;
+      if (count%10 == 0) {
+        std::cout << std::setw(6) << std::setprecision(4) << std::setfill(' ') << 100.0*(double(count)/double(size)) << '%' << '\r' << std::flush;
+      }
+
+    }
+    kick_x.push_back(kick_x_vector);
+    kick_y.push_back(kick_y_vector);
+    kick_x_vector.clear();
+    kick_y_vector.clear();
+  }
+
+  KickMap temp_kickmap(this->physical_length, grid.x, grid.y, kick_x, kick_y);
+  kickmap = temp_kickmap;
 }
 
-void InsertionDevice::write_kickmap_file(std::string filename){
-  this->kickmap.write_to_file(filename);
-}
 
-void InsertionDevice::write_fieldmap_files(std::string filename, std::vector<double> x_vector, std::vector<double> y_vector, std::vector<double> z_vector){
-  _write_fieldmap_files(*this, filename, x_vector, y_vector, z_vector);
-}
+void InsertionDevice::calc_kickmap(Grid grid, Mask mask, double energy, double runge_kutta_step, KickMap& kickmap, std::vector<std::vector<std::vector<double> > >& trajectories){
+  double beta; double brho;
+  calc_brho(energy, brho, beta);
 
-void InsertionDevice::write_fieldmap_file(std::string filename, std::vector<double> x_vector, double y, std::vector<double> z_vector){
-  std::vector<double> y_vector;
-  y_vector.push_back(y);
-  _write_fieldmap_file(*this, filename, x_vector, y_vector, z_vector);
-}
+  int count = 0;
+  int size = grid.nx * grid.ny;
+  Vector3D<> r(0.0, 0.0, this->z_min);
+  Vector3D<> p(0.0, 0.0, 1.0);
 
-void InsertionDevice::write_fieldmap_file(std::string filename, std::vector<double> x_vector, std::vector<double> y_vector, std::vector<double> z_vector){
-  _write_fieldmap_file(*this, filename, x_vector, y_vector, z_vector);
+  std::cout << std::endl << "Calculating kickmap..." << std::endl;
+
+  std::vector<double> kick_x_vector;
+  std::vector<double> kick_y_vector;
+  std::vector<std::vector<double> > kick_x;
+	std::vector<std::vector<double> > kick_y;
+  std::vector<std::vector<double> > trajectory;
+
+  for(int i = 0; i < grid.ny; i+=1){
+    for(int j =0; j < grid.nx; j+=1){
+      r.x = grid.x[j]; r.y = grid.y[i];
+      runge_kutta(*this, brho, beta, runge_kutta_step, mask, r, p, trajectory);
+      kick_x_vector.push_back( (trajectory.back()[3])*(pow(brho, 2.0)) );
+      kick_y_vector.push_back( (trajectory.back()[4])*(pow(brho, 2.0)) );
+      trajectories.push_back(trajectory);
+
+      count += 1;
+      if (count%10 == 0) {
+        std::cout << std::setw(6) << std::setprecision(4) << std::setfill(' ') << 100.0*(double(count)/double(size)) << '%' << '\r' << std::flush;
+      }
+
+    }
+    kick_x.push_back(kick_x_vector);
+    kick_y.push_back(kick_y_vector);
+    kick_x_vector.clear();
+    kick_y_vector.clear();
+  }
+
+  KickMap temp_kickmap(this->physical_length, grid.x, grid.y, kick_x, kick_y);
+  kickmap = temp_kickmap;
 }

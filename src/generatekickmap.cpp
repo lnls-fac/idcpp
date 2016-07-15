@@ -102,12 +102,6 @@ void read_input_file(std::string input_filename, bool& status, InputParameters& 
   }
 }
 
-Vector3D<> field(Vector3D<> pos){
-  Vector3D<> f;
-  f.x = 2;
-  return f;
-}
-
 int main(int argc, char ** argv) {
 
   struct timespec start, finish;
@@ -129,36 +123,15 @@ int main(int argc, char ** argv) {
   if (status){
 
     Grid grid(inputs.grid_nx, inputs.grid_ny, inputs.grid_xmin, inputs.grid_xmax, inputs.grid_ymin, inputs.grid_ymax);
-
     Mask mask;
     if (inputs.mask_shape_in_file){ mask.load(inputs.mask_filename); }
     else { mask.load(inputs.mask_shape, inputs.mask_width, inputs.mask_height); }
-
-    double brho = 10;
-    double beta = 0.9999;
-    double zmax = 1;
-    double step = 0.0005;
-    Vector3D<> r(0,0,-1);
-    Vector3D<> p(0,0,1);
-    Vector3D<> kicks;
-    std::vector<std::vector<double> > trajectory;
-    runge_kutta(&field, brho, beta, zmax, step, mask, r, p, kicks, trajectory);
-
-    std::vector<double> x;
-    std::vector<double> y;
-    std::vector<double> z;
-
-    x.push_back(1);
-    x.push_back(2);
-    y = x;
-    z = x;
-    _write_fieldmap_file(&field, "teste.txt", x, y, z);
-
     FieldMapContainer fieldmaps(inputs.fieldmap_filenames);
     InsertionDevice insertiondevice(fieldmaps);
 
-    insertiondevice.calc_kickmap(grid, mask, inputs.energy, inputs.rkstep, "teste.txt");
-    insertiondevice.write_kickmap_file(inputs.kickmap_filename);
+    KickMap kickmap;
+    insertiondevice.calc_kickmap(grid, mask, inputs.energy, inputs.rkstep, kickmap);
+    save_kickmap(inputs.kickmap_filename, kickmap);
 
     clock_gettime(CLOCK_MONOTONIC, &finish);
     elapsed = (finish.tv_sec - start.tv_sec);

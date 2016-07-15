@@ -21,4 +21,5 @@ namespace std {
       %template(CppDoubleVector) vector<double>;
       %template(CppVectorVector3D) vector<Vector3D<double> >;
       %template(CppDoubleVectorVector) vector<vector<double> >;
+      %template(CppVectorHalbachCassette) vector<HalbachCassette>;
 }

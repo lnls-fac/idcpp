@@ -2,6 +2,12 @@
 #include <vector>
 #include <api.h>
 
+Subblock::Subblock(const Subblock &obj){
+  this->dim = obj.dim;
+  this->pos = obj.pos;
+  this->str = obj.str;
+}
+
 Matrix3D<double> Subblock::get_gmatrix( Vector3D<double> r)  {
   double x[] = {pos.x - r.x - dim.x/2, pos.x - r.x + dim.x/2};
   double y[] = {pos.y - r.y - dim.y/2, pos.y - r.y + dim.y/2};
@@ -29,6 +35,11 @@ Matrix3D<double> Subblock::get_gmatrix( Vector3D<double> r)  {
 }
 
 
+Block::Block(const Block &obj){
+  this->mag = obj.mag;
+  this->subblocks = obj.subblocks;
+}
+
 Matrix3D<double> Block::get_gmatrix( Vector3D<double> r)  {
   Matrix3D<double> m;
   for(std::vector<Subblock>::size_type i = 0; i != subblocks.size(); i++) {
@@ -38,7 +49,7 @@ Matrix3D<double> Block::get_gmatrix( Vector3D<double> r)  {
 }
 
 
-Vector3D<double> Block::get_field( Vector3D<double> r)  {
+Vector3D<double> Block::field( Vector3D<double> r)  {
   return this->get_gmatrix(r) * this->mag;
 }
 

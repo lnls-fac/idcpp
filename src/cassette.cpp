@@ -1,35 +1,6 @@
 #include <vector>
 #include <api.h>
 
-Vector3D<double> Container::get_field( Vector3D<double>& r)  {
-  Vector3D<double> f;
-  for(std::vector<Block>::size_type i = 0; i != blocks.size(); i++) {
-    f += blocks[i].get_field(r);
-  }
-  return f;
-}
-
-std::vector<Vector3D<double> > Container::get_field( std::vector<Vector3D<double> >& r)  {
-  std::vector<Vector3D<double> > f;
-  for(unsigned int j = 0; j != r.size(); j++) {
-    Vector3D<double> tf;
-    for(std::vector<Block>::size_type i = 0; i != blocks.size(); i++) {
-      tf += blocks[i].get_field(r[j]);
-    }
-    f.push_back(tf);
-  }
-  return f;
-}
-
-Container& Container::shift_pos( Vector3D<double> dr) {
-  for(std::vector<Block>::size_type i = 0; i != blocks.size(); i++) {
-    Vector3D<double> pos = blocks[i].get_pos();
-    blocks[i].set_pos(pos + dr);
-  }
-  return *this;
-}
-
-
 std::ostream& operator <<(std::ostream& out, HalbachCassette& v) {
 
   char buffer[256];
@@ -71,7 +42,7 @@ void HalbachCassette::gen_halbach_cassette(Block& genblock, const Matrix3D<doubl
   for(unsigned int i=0; i<nr_periods; ++i) {
     block.set_mag(genblock.get_mag());
     for(unsigned int j=0; j<N; ++j) {
-      this->blocks.push_back(block);                                           // adds block to container
+      this->blocks.push_back(block);                                           // adds block to block container
       Vector3D<double> pos = block.get_pos(); pos.z += dz; block.set_pos(pos); // shifts longitudinally
       block.set_mag(rot * block.get_mag());                                    // rotates magetization vector
     }
@@ -90,7 +61,7 @@ HalbachCassette::HalbachCassette(const HalbachCassette &obj){
   this->N           = obj.N;
 }
 
-HalbachCassette& HalbachCassette::set_x( double x) {
+HalbachCassette& HalbachCassette::set_xcenter( double x) {
   for(auto i = 0; i != blocks.size(); i++) {
     Vector3D<double> pos = blocks[i].get_pos(); pos.x = x; blocks[i].set_pos(pos);
   }
@@ -103,18 +74,39 @@ HalbachCassette& HalbachCassette::set_zcenter( double z) {
   return *this;
 }
 
-HalbachCassette& HalbachCassette::set_y( double y) {
+HalbachCassette& HalbachCassette::set_ycenter( double y) {
   for(auto i = 0; i != blocks.size(); i++) {
     Vector3D<double> pos = blocks[i].get_pos(); pos.y = y; blocks[i].set_pos(pos);
   }
   return *this;
 }
 
-Vector3D<double> HalbachCassette::get_pos(){
-  Vector3D<double> pos = this->blocks[0].get_pos();
+HalbachCassette& HalbachCassette::set_center_pos(Vector3D<double> pos){
+  Vector3D<double> old_pos = this->get_center_pos();
+  Vector3D<double> dr = pos - old_pos;
+  this->shift_pos(dr);
+  return *this;
+}
+
+HalbachCassette& HalbachCassette::set_first_block_pos(Vector3D<double> pos){
+  Vector3D<double> old_pos = this->get_first_block_pos();
+  Vector3D<double> dr = pos - old_pos;
+  this->shift_pos(dr);
+  return *this;
+}
+
+HalbachCassette& HalbachCassette::set_last_block_pos(Vector3D<double> pos){
+  Vector3D<double> old_pos = this->get_last_block_pos();
+  Vector3D<double> dr = pos - old_pos;
+  this->shift_pos(dr);
+  return *this;
+}
+
+Vector3D<double> HalbachCassette::get_center_pos(){
+  Vector3D<double> center = this->blocks[0].get_pos();
   double zm = 0.5 * (this->blocks.front().get_pos().z + this->blocks.back().get_pos().z);
-  pos.z = zm;
-  return pos;
+  center.z = zm;
+  return center;
 }
 
 Vector3D<double> HalbachCassette::get_dim(){
@@ -122,4 +114,20 @@ Vector3D<double> HalbachCassette::get_dim(){
   double zlength = std::fabs(this->blocks.front().get_pos().z - this->blocks.back().get_pos().z);
   dim.z = zlength;
   return dim;
+}
+
+Vector3D<double> HalbachCassette::get_block_dim(){
+  Vector3D<double> dim = this->blocks[0].get_dim();
+  return dim;
+}
+
+Vector3D<double> HalbachCassette::get_first_block_pos(){
+  Vector3D<double> pos = this->blocks[0].get_pos();
+  return pos;
+}
+
+Vector3D<double> HalbachCassette::get_last_block_pos(){
+  int n = this->blocks.size();
+  Vector3D<double> pos = this->blocks[n-1].get_pos();
+  return pos;
 }

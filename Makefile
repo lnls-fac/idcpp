@@ -64,16 +64,17 @@ ALGLIBSRC_CPP  = 	ap.cpp \
 									solvers.cpp \
 									specialfunctions.cpp \
 
-LIBSOURCES_CPP = 	fieldmap.cpp \
+LIBSOURCES_CPP = 	block.cpp \
+									blockcontainer.cpp \
+									cassette.cpp \
+									cassettecontainer.cpp \
+									fieldmap.cpp \
 									fieldmap3d.cpp \
 									fieldmapcontainer.cpp \
 									functions.cpp \
 									grid.cpp \
 									mask.cpp \
-									block.cpp \
-									cassette.cpp \
-									delta.cpp \
-									epu.cpp \
+									kickmap.cpp \
 									insertiondevice.cpp \
 
 BINSOURCES_CPP =	generatekickmap.cpp
