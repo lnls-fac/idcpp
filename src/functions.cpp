@@ -13,13 +13,14 @@ static const double electron_rest_energy = 510998.92811;  // [eV]
 static const double light_speed          = 299792458;     // [m/s]
 
 
-void calc_brho(double energy, double& brho, double& beta){
+void calc_brho(double energy, double& brho, double& beta) {
+
   double gamma = energy / electron_rest_energy;
   beta  = std::sqrt(1.0 - 1.0 / (gamma * gamma));
   brho  = (beta * energy / light_speed);
 }
 
-void newton_lorentz_equation(double alpha, Vector3D<> r, Vector3D<> p,  Vector3D<> b, Vector3D<>& dr_ds, Vector3D<>& dp_ds){
+void newton_lorentz_equation(double alpha, Vector3D<> r, Vector3D<> p,  Vector3D<> b, Vector3D<>& dr_ds, Vector3D<>& dp_ds) {
 
   dr_ds.x = p.x;
   dr_ds.y = p.y;
@@ -30,8 +31,10 @@ void newton_lorentz_equation(double alpha, Vector3D<> r, Vector3D<> p,  Vector3D
 
 }
 
+void runge_kutta(Magnet& magnet, double energy, Vector3D<> r, Vector3D<> p, double zmax, double step, const Mask& mask,  Vector3D<>& kick) {
 
-void runge_kutta(Magnet& magnet, double brho, double beta, double step, Mask& mask, Vector3D<> r, Vector3D<> p, Vector3D<>& kick){
+  double brho, beta;
+  calc_brho(energy, brho, beta);
 
   double alpha = 1.0/brho/beta;
   bool inside = true;
@@ -41,7 +44,7 @@ void runge_kutta(Magnet& magnet, double brho, double beta, double step, Mask& ma
   Vector3D<> kr3; Vector3D<> kp3; Vector3D<> r3; Vector3D<> p3;
   Vector3D<> kr4; Vector3D<> kp4;
 
-  while (r.z < magnet.get_zmax()){
+  while (r.z < zmax) {
 
     inside = mask.is_inside(r); if(!inside) { p.x = p.y = p.z = NAN; break; }
     b = magnet.field(r);
@@ -68,10 +71,14 @@ void runge_kutta(Magnet& magnet, double brho, double beta, double step, Mask& ma
     r = r + (step/6.0)*(kr1 + 2.0*kr2 + 2.0*kr3 + kr4);
     p = p + (step/6.0)*(kp1 + 2.0*kp2 + 2.0*kp3 + kp4);
   }
-  kick = p*(pow(brho, 2.0));
+  kick = p;
+  // kick = p*(pow(brho, 2.0)); // i think this convertion does not belong to a RK function
 }
 
-void runge_kutta(Magnet& magnet, double brho, double beta, double step, Mask& mask, Vector3D<> r, Vector3D<> p, std::vector<std::vector<double> >& trajectory){
+void runge_kutta(Magnet& magnet, double energy, Vector3D<> r, Vector3D<> p, double zmax, double step, const Mask& mask, std::vector<std::vector<double> >& trajectory) {
+
+  double brho, beta;
+  calc_brho(energy, brho, beta);
 
   double alpha = 1.0/brho/beta;
   bool inside = true;
@@ -88,7 +95,7 @@ void runge_kutta(Magnet& magnet, double brho, double beta, double step, Mask& ma
   trajectory.push_back(particle_pos);
   particle_pos.clear();
 
-  while (r.z < magnet.get_zmax()){
+  while (r.z < zmax) {
 
     inside = mask.is_inside(r); if(!inside) { p.x = p.y = p.z = NAN; break; }
     b = magnet.field(r);
@@ -123,53 +130,41 @@ void runge_kutta(Magnet& magnet, double brho, double beta, double step, Mask& ma
   }
 }
 
-void calc_kickmap(Magnet& magnet, Grid grid, Mask mask, double energy, double runge_kutta_step, KickMap& kickmap){
+void calc_kickmap(Magnet& magnet, double energy, const Grid& grid, double zmin, double zmax, double rk_step, const Mask& mask, KickMap& kickmap) {
+
   double beta; double brho;
   calc_brho(energy, brho, beta);
 
-  int count = 0;
-  int size = grid.nx * grid.ny;
-  Vector3D<> r(0.0, 0.0, magnet.get_zmin());
+  Vector3D<> r(0.0, 0.0, zmin);
   Vector3D<> p(0.0, 0.0, 1.0);
   Vector3D<> kick;
 
-  std::cout << std::endl << "Calculating kickmap..." << std::endl;
+  //std::cout << std::endl << "Calculating kickmap..." << std::endl;
 
-  std::vector<double> kick_x_vector;
-  std::vector<double> kick_y_vector;
-  std::vector<std::vector<double> > kick_x;
-	std::vector<std::vector<double> > kick_y;
+  std::vector<std::vector<double> > kick_x, kick_y;
 
-  for(int i = 0; i < grid.ny; i+=1){
-    for(int j =0; j < grid.nx; j+=1){
+  int count = 0, size = grid.nx * grid.ny;
+  for(auto i = 0; i < grid.ny; ++i) {
+    std::vector<double> kick_x_vector, kick_y_vector;
+    for(auto j = 0; j < grid.nx; ++j) {
       r.x = grid.x[j]; r.y = grid.y[i];
-      runge_kutta(magnet, brho, beta, runge_kutta_step, mask, r, p, kick);
-      kick_x_vector.push_back(kick.x );
-      kick_y_vector.push_back(kick.y);
-
-      count += 1;
-      if (count%10 == 0) {
-        std::cout << std::setw(6) << std::setprecision(4) << std::setfill(' ') << 100.0*(double(count)/double(size)) << '%' << '\r' << std::flush;
-      }
-
+      runge_kutta(magnet, energy, r, p, zmax, rk_step, mask, kick);
+      kick_x_vector.push_back(kick.x*brho*brho); kick_y_vector.push_back(kick.y*brho*brho);
+      //count++; if (count%10 == 0) { std::cout << std::setw(6) << std::setprecision(4) << std::setfill(' ') << 100.0*(double(count)/double(size)) << '%' << '\r' << std::flush; }
     }
-    kick_x.push_back(kick_x_vector);
-    kick_y.push_back(kick_y_vector);
-    kick_x_vector.clear();
-    kick_y_vector.clear();
+    kick_x.push_back(kick_x_vector); kick_y.push_back(kick_y_vector);
   }
 
   KickMap temp_kickmap(magnet.get_physical_length(), grid.x, grid.y, kick_x, kick_y);
   kickmap = temp_kickmap;
 }
 
+void calc_kickmap(Magnet& magnet, double energy, const Grid& grid, double zmin, double zmax, double rk_step, const Mask& mask, KickMap& kickmap, std::vector<std::vector<std::vector<double> > >& trajectories) {
 
-void calc_kickmap(Magnet& magnet, Grid grid, Mask mask, double energy, double runge_kutta_step, KickMap& kickmap, std::vector<std::vector<std::vector<double> > >& trajectories){
   double beta; double brho;
   calc_brho(energy, brho, beta);
 
-  int count = 0;
-  int size = grid.nx * grid.ny;
+
   Vector3D<> r(0.0, 0.0, magnet.get_zmin());
   Vector3D<> p(0.0, 0.0, 1.0);
 
@@ -181,19 +176,16 @@ void calc_kickmap(Magnet& magnet, Grid grid, Mask mask, double energy, double ru
 	std::vector<std::vector<double> > kick_y;
   std::vector<std::vector<double> > trajectory;
 
+  int count = 0, size = grid.nx * grid.ny;
   for(int i = 0; i < grid.ny; i+=1){
     for(int j =0; j < grid.nx; j+=1){
       r.x = grid.x[j]; r.y = grid.y[i];
-      runge_kutta(magnet, brho, beta, runge_kutta_step, mask, r, p, trajectory);
+      runge_kutta(magnet, energy, r, p, zmax, rk_step, mask, trajectory);
+      //runge_kutta(magnet, brho, beta, runge_kutta_step, mask, r, p, trajectory);
       kick_x_vector.push_back( (trajectory.back()[3])*(pow(brho, 2.0)) );
       kick_y_vector.push_back( (trajectory.back()[4])*(pow(brho, 2.0)) );
       trajectories.push_back(trajectory);
-
-      count += 1;
-      if (count%10 == 0) {
-        std::cout << std::setw(6) << std::setprecision(4) << std::setfill(' ') << 100.0*(double(count)/double(size)) << '%' << '\r' << std::flush;
-      }
-
+      //count += 1; if (count%10 == 0) { std::cout << std::setw(6) << std::setprecision(4) << std::setfill(' ') << 100.0*(double(count)/double(size)) << '%' << '\r' << std::flush; }
     }
     kick_x.push_back(kick_x_vector);
     kick_y.push_back(kick_y_vector);

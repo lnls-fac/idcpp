@@ -70,7 +70,7 @@ class KickMap {
   	KickMap() {};
   	KickMap(double physical_length, std::vector<double> x, std::vector<double> y, std::vector<std::vector<double> > kick_x, std::vector<std::vector<double> > kicky);
     KickMap(const KickMap &obj);
-    
+
   	double physical_length;
   	int nx;
   	int ny;
@@ -358,10 +358,10 @@ class DELTA: public CassetteContainer {
 
 void calc_brho(double energy, double& brho, double& beta);
 void newton_lorentz_equation(double alpha, Vector3D<> r, Vector3D<> p,  Vector3D<> b, Vector3D<>& dr_ds, Vector3D<>& dp_ds);
-void runge_kutta(Magnet& magnet, double brho, double beta, double step, Mask& mask, Vector3D<> r, Vector3D<> p, Vector3D<>& kick);
-void runge_kutta(Magnet& magnet, double brho, double beta, double step, Mask& mask, Vector3D<> r, Vector3D<> p, std::vector<std::vector<double> >& trajectory);
-void calc_kickmap(Magnet& magnet, Grid grid, Mask mask, double energy, double runge_kutta_step, KickMap& kickmap);
-void calc_kickmap(Magnet& magnet, Grid grid, Mask mask, double energy, double runge_kutta_step, KickMap& kickmap, std::vector<std::vector<std::vector<double> > >& trajectories);
+void runge_kutta(Magnet& magnet, double energy, Vector3D<> r, Vector3D<> p, double zmax, double step, const Mask& mask,  Vector3D<>& kick);
+void runge_kutta(Magnet& magnet, double energy, Vector3D<> r, Vector3D<> p, double zmax, double step, const Mask& mask, std::vector<std::vector<double> >& trajectory);
+void calc_kickmap(Magnet& magnet, double energy, const Grid& grid, double zmin, double zmax, double rk_step, const Mask& mask, KickMap& kickmap);
+void calc_kickmap(Magnet& magnet, double energy, const Grid& grid, double zmin, double zmax, double rk_step, const Mask& mask, KickMap& kickmap, std::vector<std::vector<std::vector<double> > >& trajectories);
 
 void write_fieldmap_file(Magnet& magnet, std::string filename, std::vector<double> x_vector, std::vector<double> y_vector, std::vector<double> z_vector);
 void write_fieldmap_file(Magnet& magnet, std::string filename, std::vector<double> x_vector, double y_value, std::vector<double> z_vector);

@@ -25,6 +25,8 @@ struct InputParameters{
   std::string mask_shape;
   double mask_width;
   double mask_height;
+  double zmin;
+  double zmax;
   std::string mask_filename;
   bool mask_shape_in_file = false;
 };
@@ -46,16 +48,16 @@ void read_input_file(std::string input_filename, bool& status, InputParameters& 
     int nr_inputs = values.size();
 
     inputs.nr_fieldmaps = std::atoi(values.front().c_str());
-    if (nr_inputs == (13 + inputs.nr_fieldmaps)){
+    if (nr_inputs == (15 + inputs.nr_fieldmaps)){
       inputs.mask_height  = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
       inputs.mask_width   = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
       inputs.mask_shape   =  values.back(); values.pop_back();
       status = true;
-    } else if (nr_inputs == (11 + inputs.nr_fieldmaps)){
+    } else if (nr_inputs == (13 + inputs.nr_fieldmaps)){
       inputs.mask_filename      = values.back(); values.pop_back();
       inputs.mask_shape_in_file = true;
       status = true;
-    } else if (nr_inputs == (10 + inputs.nr_fieldmaps)){
+    } else if (nr_inputs == (12 + inputs.nr_fieldmaps)){
       inputs.mask_height  = 0.0;
       inputs.mask_width   = 0.0;
       inputs.mask_shape   = "NONE";
@@ -71,6 +73,8 @@ void read_input_file(std::string input_filename, bool& status, InputParameters& 
       inputs.grid_xmin          = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
       inputs.grid_ny            = std::atoi(values.back().c_str());          values.pop_back();
       inputs.grid_nx            = std::atoi(values.back().c_str());          values.pop_back();
+      inputs.zmax               = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
+      inputs.zmin               = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
       inputs.rkstep             = (std::atof(values.back().c_str()))/1000.0; values.pop_back();
       inputs.energy             = std::atof(values.back().c_str());          values.pop_back();
       inputs.kickmap_filename   = values.back();                             values.pop_back();
@@ -86,7 +90,9 @@ void read_input_file(std::string input_filename, bool& status, InputParameters& 
     for (int i=0; i< inputs.nr_fieldmaps; i+=1) { std::cout << "  " << inputs.fieldmap_filenames[i] << std::endl; }
     std::cout << "Kickmap filename:     " << std::endl <<  "  " << inputs.kickmap_filename << std::endl;
     std::cout << "Energy:               " << inputs.energy << std::endl;
-    std::cout << "Runge-kutta step      " << inputs.rkstep << std::endl;
+    std::cout << "Runge-Kutta step      " << inputs.rkstep << std::endl;
+    std::cout << "Runge-Kutta zmin      " << inputs.zmin   << std::endl;
+    std::cout << "Runge-Kutta zmax      " << inputs.zmax   << std::endl;
     std::cout << "Grid nx:              " << inputs.grid_nx << std::endl;
     std::cout << "Grid ny:              " << inputs.grid_ny << std::endl;
     std::cout << "Grid xmin:            " << inputs.grid_xmin << std::endl;
@@ -129,7 +135,8 @@ int main(int argc, char ** argv) {
     FieldMapContainer fieldmaps(inputs.fieldmap_filenames);
 
     KickMap kickmap;
-    calc_kickmap(fieldmaps, grid, mask, inputs.energy, inputs.rkstep, kickmap);
+    calc_kickmap(fieldmaps, inputs.energy, grid, inputs.zmin, inputs.zmax, inputs.rkstep, mask, kickmap);
+    //calc_kickmap(fieldmaps, grid, mask, inputs.energy, inputs.rkstep, kickmap);
     save_kickmap(inputs.kickmap_filename, kickmap);
 
     clock_gettime(CLOCK_MONOTONIC, &finish);

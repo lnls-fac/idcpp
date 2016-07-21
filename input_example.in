@@ -31,6 +31,11 @@ kickmap.txt
 # Runge-Kutta step [mm]:
 1.0
 
+# Runge-Kutta zmin [mm]
+-500
+
+# Runge-Kutta zmax [mm]
++500
 
 # --- Particle distribution parameters ---
 
