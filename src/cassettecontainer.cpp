@@ -8,7 +8,7 @@ CassetteContainer::CassetteContainer(std::vector<HalbachCassette> cassettes){
   this->cassettes = cassettes;
 }
 
-Vector3D<double> CassetteContainer::field( Vector3D<double>& r){
+Vector3D<double> CassetteContainer::field(const Vector3D<double>& r) const {
   Vector3D<double> field;
   for (int i=0; i < this->cassettes.size(); i+=1){
     field += this->cassettes[i].field(r);
@@ -16,69 +16,61 @@ Vector3D<double> CassetteContainer::field( Vector3D<double>& r){
   return field;
 }
 
-std::vector<Vector3D<double> > CassetteContainer::field( std::vector<Vector3D<double> >& r){
-  std::vector<Vector3D<> > field;
-  for (int i=0; i < r.size(); i+=1){
-    field.push_back(this->field(r[i]));
-  }
-  return field;
-}
-
-double CassetteContainer::get_x_min(){
-  std::vector<double> x_min_vector;
+double CassetteContainer::get_xmin() const{
+  std::vector<double> xmin_vector;
   for (int i=0; i < this->cassettes.size(); i+=1){
-    x_min_vector.push_back(this->cassettes[i].get_first_block_pos().x - this->cassettes[i].get_block_dim().x/2.0);
+    xmin_vector.push_back(this->cassettes[i].get_xmin());
   }
-  double x_min = *std::min_element(x_min_vector.begin(), x_min_vector.end());
-  return x_min;
+  double xmin = *std::min_element(xmin_vector.begin(), xmin_vector.end());
+  return xmin;
 }
 
-double CassetteContainer::get_y_min(){
-  std::vector<double> y_min_vector;
+double CassetteContainer::get_xmax() const{
+  std::vector<double> xmax_vector;
   for (int i=0; i < this->cassettes.size(); i+=1){
-    y_min_vector.push_back(this->cassettes[i].get_first_block_pos().y - this->cassettes[i].get_block_dim().y/2.0);
+    xmax_vector.push_back(this->cassettes[i].get_xmax());
   }
-  double y_min = *std::min_element(y_min_vector.begin(), y_min_vector.end());
-  return y_min;
+  double xmax = *std::max_element(xmax_vector.begin(), xmax_vector.end());
+  return xmax;
 }
 
-double CassetteContainer::get_z_min(){
-  std::vector<double> z_min_vector;
+double CassetteContainer::get_ymin() const{
+  std::vector<double> ymin_vector;
   for (int i=0; i < this->cassettes.size(); i+=1){
-    z_min_vector.push_back(this->cassettes[i].get_first_block_pos().z - this->cassettes[i].get_block_dim().z/2.0);
+    ymin_vector.push_back(this->cassettes[i].get_ymin());
   }
-  double z_min = *std::min_element(z_min_vector.begin(), z_min_vector.end());
-  return z_min;
+  double ymin = *std::min_element(ymin_vector.begin(), ymin_vector.end());
+  return ymin;
 }
 
-double CassetteContainer::get_x_max(){
-  std::vector<double> x_max_vector;
+double CassetteContainer::get_ymax() const{
+  std::vector<double> ymax_vector;
   for (int i=0; i < this->cassettes.size(); i+=1){
-    x_max_vector.push_back(this->cassettes[i].get_last_block_pos().x + this->cassettes[i].get_block_dim().x/2.0);
+    ymax_vector.push_back(this->cassettes[i].get_ymax());
   }
-  double x_max = *std::min_element(x_max_vector.begin(), x_max_vector.end());
-  return x_max;
+  double ymax = *std::max_element(ymax_vector.begin(), ymax_vector.end());
+  return ymax;
 }
 
-double CassetteContainer::get_y_max(){
-  std::vector<double> y_max_vector;
+double CassetteContainer::get_zmin() const{
+  std::vector<double> zmin_vector;
   for (int i=0; i < this->cassettes.size(); i+=1){
-    y_max_vector.push_back(this->cassettes[i].get_last_block_pos().y + this->cassettes[i].get_block_dim().y/2.0);
+    zmin_vector.push_back(this->cassettes[i].get_zmin());
   }
-  double y_max = *std::min_element(y_max_vector.begin(), y_max_vector.end());
-  return y_max;
+  double zmin = *std::min_element(zmin_vector.begin(), zmin_vector.end());
+  return zmin;
 }
 
-double CassetteContainer::get_z_max(){
-  std::vector<double> z_max_vector;
+double CassetteContainer::get_zmax() const{
+  std::vector<double> zmax_vector;
   for (int i=0; i < this->cassettes.size(); i+=1){
-    z_max_vector.push_back(this->cassettes[i].get_last_block_pos().z + this->cassettes[i].get_block_dim().z/2.0);
+    zmax_vector.push_back(this->cassettes[i].get_zmax());
   }
-  double z_max = *std::min_element(z_max_vector.begin(), z_max_vector.end());
-  return z_max;
+  double zmax = *std::max_element(zmax_vector.begin(), zmax_vector.end());
+  return zmax;
 }
 
-double CassetteContainer::get_physical_length(){
-  double physical_length = std::fabs(this->get_z_max() - this->get_z_min());
+double CassetteContainer::get_physical_length() const{
+  double physical_length = std::fabs(this->get_zmax() - this->get_zmin());
   return physical_length;
 }

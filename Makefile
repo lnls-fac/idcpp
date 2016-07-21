@@ -64,7 +64,8 @@ ALGLIBSRC_CPP  = 	ap.cpp \
 									solvers.cpp \
 									specialfunctions.cpp \
 
-LIBSOURCES_CPP = 	block.cpp \
+LIBSOURCES_CPP = 	magnet.cpp \
+									block.cpp \
 									blockcontainer.cpp \
 									cassette.cpp \
 									cassettecontainer.cpp \
@@ -75,7 +76,7 @@ LIBSOURCES_CPP = 	block.cpp \
 									grid.cpp \
 									mask.cpp \
 									kickmap.cpp \
-									insertiondevice.cpp \
+									idmodel.cpp \
 
 BINSOURCES_CPP =	generatekickmap.cpp
 

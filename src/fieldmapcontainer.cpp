@@ -22,14 +22,7 @@ FieldMapContainer::FieldMapContainer(std::vector<std::string> fieldmap_filenames
       if (e == 2) { std::cout << "File not found: " << filename << std::endl << std::endl; }
       throw InsertionDeviceException::file_not_found;
     }
-    this->nr_fieldmaps = 0;
-    this->x_min = this->fieldmap3D.x_min;
-    this->x_max = this->fieldmap3D.x_max;
-    this->y_min = this->fieldmap3D.y_min;
-    this->y_max = this->fieldmap3D.y_max;
-    this->z_min = this->fieldmap3D.z_min;
-    this->z_max = this->fieldmap3D.z_max;
-    this->physical_length = this->fieldmap3D.physical_length;
+    this->set_attributes3D();
 
   } else {
 
@@ -43,7 +36,7 @@ FieldMapContainer::FieldMapContainer(std::vector<std::string> fieldmap_filenames
         fieldmap_filenames.pop_back();
         FieldMap fieldmap(filename.c_str());
         this->fieldmaps.push_back(fieldmap);
-        std::cout << "Load " << filename << ":  y = " << fieldmap.y << std::endl;
+        std::cout << "Load " << filename << ":  y = " << fieldmap.get_ymin() << std::endl;
         nr_fieldmaps +=1;
       } catch(InsertionDeviceException::type e){
         if (e == 1) { std::cout << "File not found: " << filename << std::endl << std::endl; }
@@ -61,7 +54,7 @@ FieldMapContainer::FieldMapContainer(std::string fieldmap_filename, bool fieldma
     try{
       FieldMap fieldmap(fieldmap_filename.c_str());
       this->fieldmaps.push_back(fieldmap);
-      std::cout << "Load " << fieldmap_filename << ":  y = " << fieldmap.y << std::endl;
+      std::cout << "Load " << fieldmap_filename << ":  y = " << fieldmap.get_ymin() << std::endl;
     } catch(InsertionDeviceException::type e){
       if (e == 2) { std::cout << "File not found: " << fieldmap_filename << std::endl << std::endl; }
       throw InsertionDeviceException::file_not_found;
@@ -76,14 +69,7 @@ FieldMapContainer::FieldMapContainer(std::string fieldmap_filename, bool fieldma
       if (e == 2) { std::cout << "File not found: " << fieldmap_filename << std::endl << std::endl; }
       throw InsertionDeviceException::file_not_found;
     }
-    this->nr_fieldmaps = 0;
-    this->x_min = this->fieldmap3D.x_min;
-    this->x_max = this->fieldmap3D.x_max;
-    this->y_min = this->fieldmap3D.y_min;
-    this->y_max = this->fieldmap3D.y_max;
-    this->z_min = this->fieldmap3D.z_min;
-    this->z_max = this->fieldmap3D.z_max;
-    this->physical_length = this->fieldmap3D.physical_length;
+    this->set_attributes3D();
   }
 
 }
@@ -100,37 +86,41 @@ FieldMapContainer::FieldMapContainer(FieldMap fieldmap){
 
 FieldMapContainer::FieldMapContainer(FieldMap3D fieldmap3D){
   this->fieldmap3D = fieldmap3D;
-  this->nr_fieldmaps = 0;
-  this->x_min = this->fieldmap3D.x_min;
-  this->x_max = this->fieldmap3D.x_max;
-  this->y_min = this->fieldmap3D.y_min;
-  this->y_max = this->fieldmap3D.y_max;
-  this->z_min = this->fieldmap3D.z_min;
-  this->z_max = this->fieldmap3D.z_max;
-  this->physical_length = this->fieldmap3D.physical_length;
+  this->set_attributes3D();
 }
 
 void FieldMapContainer::set_attributes(){
   this->nr_fieldmaps = this->fieldmaps.size();
-  std::vector<double> x_min_vector;
-  std::vector<double> x_max_vector;
+  std::vector<double> xmin_vector;
+  std::vector<double> xmax_vector;
   std::vector<double> y_vector;
-  std::vector<double> z_min_vector;
-  std::vector<double> z_max_vector;
+  std::vector<double> zmin_vector;
+  std::vector<double> zmax_vector;
   for(int i=0; i < this->nr_fieldmaps; i+=1) {
-    x_min_vector.push_back(this->fieldmaps[i].x_min);
-    x_max_vector.push_back(this->fieldmaps[i].x_max);
-    y_vector.push_back(this->fieldmaps[i].y);
-    z_min_vector.push_back(this->fieldmaps[i].z_min);
-    z_max_vector.push_back(this->fieldmaps[i].z_max);
+    xmin_vector.push_back(this->fieldmaps[i].get_xmin());
+    xmax_vector.push_back(this->fieldmaps[i].get_xmax());
+    y_vector.push_back(this->fieldmaps[i].get_ymin());
+    zmin_vector.push_back(this->fieldmaps[i].get_zmin());
+    zmax_vector.push_back(this->fieldmaps[i].get_zmax());
   }
-  this->x_min = *std::min_element(x_min_vector.begin(), x_min_vector.end());
-  this->x_max = *std::max_element(x_max_vector.begin(), x_max_vector.end());
-  this->y_min = *std::min_element(y_vector.begin(), y_vector.end());
-  this->y_max = *std::max_element(y_vector.begin(), y_vector.end());
-  this->z_min = *std::min_element(z_min_vector.begin(), z_min_vector.end());
-  this->z_max = *std::max_element(z_max_vector.begin(), z_max_vector.end());
-  this->physical_length = this->fieldmaps[0].physical_length;
+  this->xmin = *std::min_element(xmin_vector.begin(), xmin_vector.end());
+  this->xmax = *std::max_element(xmax_vector.begin(), xmax_vector.end());
+  this->ymin = *std::min_element(y_vector.begin(), y_vector.end());
+  this->ymax = *std::max_element(y_vector.begin(), y_vector.end());
+  this->zmin = *std::min_element(zmin_vector.begin(), zmin_vector.end());
+  this->zmax = *std::max_element(zmax_vector.begin(), zmax_vector.end());
+  this->physical_length = this->fieldmaps[0].get_physical_length();
+}
+
+void FieldMapContainer::set_attributes3D(){
+  this->nr_fieldmaps = 0;
+  this->xmin = this->fieldmap3D.get_xmin();
+  this->xmax = this->fieldmap3D.get_xmax();
+  this->ymin = this->fieldmap3D.get_ymin();
+  this->ymax = this->fieldmap3D.get_ymax();
+  this->zmin = this->fieldmap3D.get_zmin();
+  this->zmax = this->fieldmap3D.get_zmax();
+  this->physical_length = this->fieldmap3D.get_physical_length();
 }
 
 void FieldMapContainer::use_field_symmetry(bool bx_odd, bool by_odd, bool bz_odd){
@@ -140,30 +130,25 @@ void FieldMapContainer::use_field_symmetry(bool bx_odd, bool by_odd, bool bz_odd
 
   int negative_count = 0; int positive_count = 0; int zero_count = 0;
   for (int i=0; i < this->nr_fieldmaps; i+=1){
-    if (this->fieldmaps[i].y < 0) { negative_count +=1;}
-    else if (this->fieldmaps[i].y > 0) { positive_count +=1;}
-    else if (this->fieldmaps[i].y == 0) { zero_count +=1;}
+    if (this->fieldmaps[i].get_ymin() < 0) { negative_count +=1;}
+    else if (this->fieldmaps[i].get_ymin() > 0) { positive_count +=1;}
+    else if (this->fieldmaps[i].get_ymin() == 0) { zero_count +=1;}
   }
   if (((negative_count+zero_count)!= this->nr_fieldmaps) && ((positive_count+zero_count)!= this->nr_fieldmaps)){
     throw InsertionDeviceException::field_symmetry_error;
   }
 
   for (int i = (this->nr_fieldmaps -1); i >= 0; i-=1){
-    if (this->fieldmaps[i].y != 0){
+    if (this->fieldmaps[i].get_ymin() != 0){
       FieldMap neg_fieldmap(this->fieldmaps[i]);
       neg_fieldmap.use_field_symmetry(bx_odd, by_odd, bz_odd);
       new_fieldmaps.push_back(neg_fieldmap);
-      std::cout << "Load " << neg_fieldmap.fname << ":  y = " << neg_fieldmap.y << std::endl;
+      std::cout << "Load " << neg_fieldmap.fname << ":  y = " << neg_fieldmap.get_ymin() << std::endl;
     }
   }
 
   for (int i=0; i < this->nr_fieldmaps; i+=1){
     new_fieldmaps.push_back(this->fieldmaps[i]);
-  }
-
-  //Teste!
-  for (int k=0; k < new_fieldmaps.size(); k+=1){
-    std::cout << new_fieldmaps[k].y << std::endl;
   }
 
   this->fieldmaps = new_fieldmaps;
@@ -193,7 +178,7 @@ Vector3D<double> FieldMapContainer::field(const Vector3D<>& pos) const{
 
     for(int i=0; i < this->fieldmaps.size(); i+=1){
       f = this->fieldmaps[i].field(pos);
-      y_vector.push_back(this->fieldmaps[i].y);
+      y_vector.push_back(this->fieldmaps[i].get_ymin());
       bx_vector.push_back(f.x);
       by_vector.push_back(f.y);
       bz_vector.push_back(f.z);
@@ -220,16 +205,6 @@ Vector3D<double> FieldMapContainer::field(const Vector3D<>& pos) const{
     field.z = alglib::spline1dcalc(interpolant_z, pos.y);
   }
 
-  return field;
-
-}
-
-std::vector<Vector3D<double> > FieldMapContainer::field(const std::vector<Vector3D<> >& pos) const{
-
-  std::vector<Vector3D<> > field;
-  for (int i=0; i < pos.size(); i+=1){
-    field.push_back(this->field(pos[i]));
-  }
   return field;
 
 }

@@ -12,8 +12,8 @@
 FieldMap::FieldMap(const std::string& fname_, size_t id_) :
 		id(id_),
 		nx(0), nz(0),
-		x_min(0.0), dx(0.0), x_max(0.0),
-		z_min(0.0), dz(0.0), z_max(0.0),
+		xmin(0.0), dx(0.0), xmax(0.0),
+		zmin(0.0), dz(0.0), zmax(0.0),
 		data(0)
 {
 
@@ -37,10 +37,10 @@ FieldMap::FieldMap(const FieldMap &obj){
 	this->data   			= obj.data;
 	this->nx     			= obj.nx;
 	this->nz     			= obj.nz;
-	this->x_min  			= obj.x_min;
-	this->x_max  			= obj.x_max;
-	this->z_min  			= obj.z_min;
-	this->z_max  			= obj.z_max;
+	this->xmin  			= obj.xmin;
+	this->xmax  			= obj.xmax;
+	this->zmin  			= obj.zmin;
+	this->zmax  			= obj.zmax;
 	this->y      			= obj.y;
 	this->dx     			= obj.dx;
 	this->dz     			= obj.dz;
@@ -115,23 +115,23 @@ void FieldMap::read_fieldmap_from_file(const std::string& fname_, bool header, b
 	this->data   = (double*) std::realloc(this->data, nr_points*3*sizeof(double));
 	this->nx     = x_set.size();
 	this->nz     = z_set.size();
-	this->x_min  = *(x_set.begin());
-	this->x_max  = *(x_set.rbegin());
-	this->z_min  = *(z_set.begin());
-	this->z_max  = *(z_set.rbegin());
+	this->xmin  = *(x_set.begin());
+	this->xmax  = *(x_set.rbegin());
+	this->zmin  = *(z_set.begin());
+	this->zmax  = *(z_set.rbegin());
 	this->y      = *(y_set.begin());
-	this->dx     = (this->nx > 1) ? (this->x_max - this->x_min)/(this->nx - 1) : 0.0;
-	this->dz     = (this->nz > 1) ? (this->z_max - this->z_min)/(this->nz - 1) : 0.0;
+	this->dx     = (this->nx > 1) ? (this->xmax - this->xmin)/(this->nx - 1) : 0.0;
+	this->dz     = (this->nz > 1) ? (this->zmax - this->zmin)/(this->nz - 1) : 0.0;
 	this->x_grid.assign(x_set.begin(), x_set.end());
 	this->z_grid.assign(z_set.begin(), z_set.end());
 
 	// std::cout << "nr.points       : " << nr_points    << std::endl;
 	// std::cout << "nr.points.x_set : " << this->nx     << std::endl;
 	// std::cout << "nr.points.z_set : " << this->nz     << std::endl;
-	// std::cout << "min.x           : " << this->x_min  << std::endl;
-	// std::cout << "max.x           : " << this->x_max  << std::endl;
-	// std::cout << "min.z           : " << this->z_min  << std::endl;
-	// std::cout << "max.z           : " << this->z_max  << std::endl;
+	// std::cout << "min.x           : " << this->xmin  << std::endl;
+	// std::cout << "max.x           : " << this->xmax  << std::endl;
+	// std::cout << "min.z           : " << this->zmin  << std::endl;
+	// std::cout << "max.z           : " << this->zmax  << std::endl;
 	// std::cout << "dx              : " << this->dx     << std::endl;
 	// std::cout << "dz              : " << this->dz     << std::endl;
 
@@ -191,15 +191,5 @@ Vector3D<double> FieldMap::field(const Vector3D<double>& pos) const{
 	alglib::real_1d_array field;
 	alglib::spline2dcalcv(this->interpolant, pos.x, pos.z, field);
 	return Vector3D<double>(field[0], field[1], field[2]);
-
-}
-
-std::vector<Vector3D<double> > FieldMap::field(const std::vector<Vector3D<double> >& pos) const{
-
-	std::vector<Vector3D<> > field;
-  for (int i=0; i < pos.size(); i+=1){
-    field.push_back(this->field(pos[i]));
-  }
-  return field;
 
 }

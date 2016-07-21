@@ -9,3 +9,14 @@ KickMap::KickMap(double physical_length, std::vector<double> x, std::vector<doub
   this->kick_x = kick_x;
   this->kick_y = kick_y;
 }
+
+
+KickMap::KickMap(const KickMap &obj){
+  this->physical_length = obj.physical_length;
+  this->nx = obj.nx;
+  this->ny = obj.ny;
+  this->x = obj.x;
+  this->y = obj.y;
+  this->kick_x = obj.kick_x;
+  this->kick_y = obj.kick_y;
+}

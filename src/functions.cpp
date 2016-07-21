@@ -13,79 +13,6 @@ static const double electron_rest_energy = 510998.92811;  // [eV]
 static const double light_speed          = 299792458;     // [m/s]
 
 
-void create_epu(Block& genblock, unsigned int nr_periods, double magnetic_gap, double cassette_separation, double block_separation, double phase_csd, double phase_cie, InsertionDevice& insertiondevice){
-
-  HalbachCassette csd; HalbachCassette cse; HalbachCassette cid; HalbachCassette cie;
-  std::vector<HalbachCassette> cassettes;
-  Vector3D<> mag = genblock.get_mag();
-  if ((mag.x ==0) && (mag.y == 0) && (mag.z != 0)){
-    csd.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90p(), nr_periods, block_separation);
-    cse.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90p(), nr_periods, block_separation);
-    genblock.set_mag(Vector3D<>(mag.x, mag.y, -mag.z));
-    cid.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90n(), nr_periods, block_separation);
-    cie.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90n(), nr_periods, block_separation);
-  } else if ((mag.x ==0) && (mag.y != 0) && (mag.z == 0)){
-    csd.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90p(), nr_periods, block_separation);
-    cse.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90p(), nr_periods, block_separation);
-    cid.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90n(), nr_periods, block_separation);
-    cie.gen_halbach_cassette(genblock,  Matrix3D<double>::rotx90n(), nr_periods, block_separation);
-  } else {
-    throw InsertionDeviceException::invalid_magnetization;
-  }
-
-  Vector3D<double> dim = genblock.get_dim();
-  csd.set_xcenter(+(cassette_separation + dim.x)/2.0);
-  csd.set_ycenter(+(magnetic_gap + dim.y)/2.0);
-  csd.set_zcenter(phase_csd);
-
-  cse.set_xcenter(-(cassette_separation + dim.x)/2.0);
-  cse.set_ycenter(+(magnetic_gap + dim.y)/2.0);
-  cse.set_zcenter(0.0);
-
-  cid.set_xcenter(+(cassette_separation + dim.x)/2.0);
-  cid.set_ycenter(-(magnetic_gap + dim.y)/2.0);
-  cid.set_zcenter(0.0);
-
-  cie.set_xcenter(-(cassette_separation + dim.x)/2.0);
-  cie.set_ycenter(-(magnetic_gap + dim.y)/2.0);
-  cie.set_zcenter(phase_cie);
-
-  cassettes.push_back(csd); cassettes.push_back(cse); cassettes.push_back(cid); cassettes.push_back(cie);
-  insertiondevice = InsertionDevice(cassettes);
-}
-
-
-void create_delta(Block& genblock, unsigned int nr_periods, double vertical_gap, double horizontal_gap, double block_separation, double phase_cd, double phase_ce, InsertionDevice& insertiondevice){
-
-  HalbachCassette cs; HalbachCassette cd; HalbachCassette ci; HalbachCassette ce;
-  std::vector<HalbachCassette> cassettes;
-  cs.gen_halbach_cassette(genblock, Matrix3D<double>::rotx90n(), nr_periods, block_separation);
-  cd.gen_halbach_cassette(genblock, Matrix3D<double>::rotx90n(), nr_periods, block_separation);
-  ci.gen_halbach_cassette(genblock, Matrix3D<double>::rotx90p(), nr_periods, block_separation);
-  ce.gen_halbach_cassette(genblock, Matrix3D<double>::rotx90p(), nr_periods, block_separation);
-
-  Vector3D<double> dim = genblock.get_dim();
-  cs.set_xcenter(0.0);
-  cs.set_ycenter(+(vertical_gap + dim.y)/2.0);
-  cs.set_zcenter(0.0);
-
-  cd.set_xcenter(+(horizontal_gap + dim.x)/2.0);
-  cd.set_ycenter(0.0);
-  cd.set_zcenter(phase_cd);
-
-  ci.set_xcenter(0.0);
-  ci.set_ycenter(-(vertical_gap + dim.y)/2.0);
-  ci.set_zcenter(0.0);
-
-  ce.set_xcenter(-(horizontal_gap + dim.x)/2.0);
-  ce.set_ycenter(0.0);
-  ce.set_zcenter(phase_ce);
-
-  cassettes.push_back(cs); cassettes.push_back(cd); cassettes.push_back(ci); cassettes.push_back(ce);
-  insertiondevice = InsertionDevice(cassettes);
-}
-
-
 void calc_brho(double energy, double& brho, double& beta){
   double gamma = energy / electron_rest_energy;
   beta  = std::sqrt(1.0 - 1.0 / (gamma * gamma));
@@ -104,7 +31,7 @@ void newton_lorentz_equation(double alpha, Vector3D<> r, Vector3D<> p,  Vector3D
 }
 
 
-void runge_kutta(InsertionDevice& insertiondevice, double brho, double beta, double step, Mask& mask, Vector3D<> r, Vector3D<> p, Vector3D<>& kick){
+void runge_kutta(Magnet& magnet, double brho, double beta, double step, Mask& mask, Vector3D<> r, Vector3D<> p, Vector3D<>& kick){
 
   double alpha = 1.0/brho/beta;
   bool inside = true;
@@ -114,28 +41,28 @@ void runge_kutta(InsertionDevice& insertiondevice, double brho, double beta, dou
   Vector3D<> kr3; Vector3D<> kp3; Vector3D<> r3; Vector3D<> p3;
   Vector3D<> kr4; Vector3D<> kp4;
 
-  while (r.z < insertiondevice.z_max){
+  while (r.z < magnet.get_zmax()){
 
     inside = mask.is_inside(r); if(!inside) { p.x = p.y = p.z = NAN; break; }
-    b = insertiondevice.field(r);
+    b = magnet.field(r);
     newton_lorentz_equation(alpha, r, p, b, kr1, kp1);
     r1 = r + (step/2.0)* kr1;
     p1 = p + (step/2.0)* kp1;
 
     inside = mask.is_inside(r1); if(!inside) { p.x = p.y = p.z = NAN; break; }
-    b1 = insertiondevice.field(r1);
+    b1 = magnet.field(r1);
     newton_lorentz_equation(alpha, r1, p1, b1, kr2, kp2);
     r2 = r + (step/2.0)* kr2;
     p2 = p + (step/2.0)* kp2;
 
     inside = mask.is_inside(r2); if(!inside) { p.x = p.y = p.z = NAN; break; }
-    b2 = insertiondevice.field(r2);
+    b2 = magnet.field(r2);
     newton_lorentz_equation(alpha, r2, p2, b2, kr3, kp3);
     r3 = r + step* kr3;
     p3 = p + step* kp3;
 
     inside = mask.is_inside(r3); if(!inside) { p.x = p.y = p.z = NAN; break; }
-    b3 = insertiondevice.field(r3);
+    b3 = magnet.field(r3);
     newton_lorentz_equation(alpha, r3, p3, b3, kr4, kp4);
 
     r = r + (step/6.0)*(kr1 + 2.0*kr2 + 2.0*kr3 + kr4);
@@ -144,7 +71,7 @@ void runge_kutta(InsertionDevice& insertiondevice, double brho, double beta, dou
   kick = p*(pow(brho, 2.0));
 }
 
-void runge_kutta(InsertionDevice& insertiondevice, double brho, double beta, double step, Mask& mask, Vector3D<> r, Vector3D<> p, std::vector<std::vector<double> >& trajectory){
+void runge_kutta(Magnet& magnet, double brho, double beta, double step, Mask& mask, Vector3D<> r, Vector3D<> p, std::vector<std::vector<double> >& trajectory){
 
   double alpha = 1.0/brho/beta;
   bool inside = true;
@@ -161,28 +88,28 @@ void runge_kutta(InsertionDevice& insertiondevice, double brho, double beta, dou
   trajectory.push_back(particle_pos);
   particle_pos.clear();
 
-  while (r.z < insertiondevice.z_max){
+  while (r.z < magnet.get_zmax()){
 
     inside = mask.is_inside(r); if(!inside) { p.x = p.y = p.z = NAN; break; }
-    b = insertiondevice.field(r);
+    b = magnet.field(r);
     newton_lorentz_equation(alpha, r, p, b, kr1, kp1);
     r1 = r + (step/2.0)* kr1;
     p1 = p + (step/2.0)* kp1;
 
     inside = mask.is_inside(r1); if(!inside) { p.x = p.y = p.z = NAN; break; }
-    b1 = insertiondevice.field(r1);
+    b1 = magnet.field(r1);
     newton_lorentz_equation(alpha, r1, p1, b1, kr2, kp2);
     r2 = r + (step/2.0)* kr2;
     p2 = p + (step/2.0)* kp2;
 
     inside = mask.is_inside(r2); if(!inside) { p.x = p.y = p.z = NAN; break; }
-    b2 = insertiondevice.field(r2);
+    b2 = magnet.field(r2);
     newton_lorentz_equation(alpha, r2, p2, b2, kr3, kp3);
     r3 = r + step* kr3;
     p3 = p + step* kp3;
 
     inside = mask.is_inside(r3); if(!inside) { p.x = p.y = p.z = NAN; break; }
-    b3 = insertiondevice.field(r3);
+    b3 = magnet.field(r3);
     newton_lorentz_equation(alpha, r3, p3, b3, kr4, kp4);
 
     r = r + (step/6.0)*(kr1 + 2.0*kr2 + 2.0*kr3 + kr4);
@@ -196,7 +123,89 @@ void runge_kutta(InsertionDevice& insertiondevice, double brho, double beta, dou
   }
 }
 
-void write_fieldmap_file(InsertionDevice& insertiondevice, std::string filename, std::vector<double> x_vector, std::vector<double> y_vector, std::vector<double> z_vector){
+void calc_kickmap(Magnet& magnet, Grid grid, Mask mask, double energy, double runge_kutta_step, KickMap& kickmap){
+  double beta; double brho;
+  calc_brho(energy, brho, beta);
+
+  int count = 0;
+  int size = grid.nx * grid.ny;
+  Vector3D<> r(0.0, 0.0, magnet.get_zmin());
+  Vector3D<> p(0.0, 0.0, 1.0);
+  Vector3D<> kick;
+
+  std::cout << std::endl << "Calculating kickmap..." << std::endl;
+
+  std::vector<double> kick_x_vector;
+  std::vector<double> kick_y_vector;
+  std::vector<std::vector<double> > kick_x;
+	std::vector<std::vector<double> > kick_y;
+
+  for(int i = 0; i < grid.ny; i+=1){
+    for(int j =0; j < grid.nx; j+=1){
+      r.x = grid.x[j]; r.y = grid.y[i];
+      runge_kutta(magnet, brho, beta, runge_kutta_step, mask, r, p, kick);
+      kick_x_vector.push_back(kick.x );
+      kick_y_vector.push_back(kick.y);
+
+      count += 1;
+      if (count%10 == 0) {
+        std::cout << std::setw(6) << std::setprecision(4) << std::setfill(' ') << 100.0*(double(count)/double(size)) << '%' << '\r' << std::flush;
+      }
+
+    }
+    kick_x.push_back(kick_x_vector);
+    kick_y.push_back(kick_y_vector);
+    kick_x_vector.clear();
+    kick_y_vector.clear();
+  }
+
+  KickMap temp_kickmap(magnet.get_physical_length(), grid.x, grid.y, kick_x, kick_y);
+  kickmap = temp_kickmap;
+}
+
+
+void calc_kickmap(Magnet& magnet, Grid grid, Mask mask, double energy, double runge_kutta_step, KickMap& kickmap, std::vector<std::vector<std::vector<double> > >& trajectories){
+  double beta; double brho;
+  calc_brho(energy, brho, beta);
+
+  int count = 0;
+  int size = grid.nx * grid.ny;
+  Vector3D<> r(0.0, 0.0, magnet.get_zmin());
+  Vector3D<> p(0.0, 0.0, 1.0);
+
+  std::cout << std::endl << "Calculating kickmap..." << std::endl;
+
+  std::vector<double> kick_x_vector;
+  std::vector<double> kick_y_vector;
+  std::vector<std::vector<double> > kick_x;
+	std::vector<std::vector<double> > kick_y;
+  std::vector<std::vector<double> > trajectory;
+
+  for(int i = 0; i < grid.ny; i+=1){
+    for(int j =0; j < grid.nx; j+=1){
+      r.x = grid.x[j]; r.y = grid.y[i];
+      runge_kutta(magnet, brho, beta, runge_kutta_step, mask, r, p, trajectory);
+      kick_x_vector.push_back( (trajectory.back()[3])*(pow(brho, 2.0)) );
+      kick_y_vector.push_back( (trajectory.back()[4])*(pow(brho, 2.0)) );
+      trajectories.push_back(trajectory);
+
+      count += 1;
+      if (count%10 == 0) {
+        std::cout << std::setw(6) << std::setprecision(4) << std::setfill(' ') << 100.0*(double(count)/double(size)) << '%' << '\r' << std::flush;
+      }
+
+    }
+    kick_x.push_back(kick_x_vector);
+    kick_y.push_back(kick_y_vector);
+    kick_x_vector.clear();
+    kick_y_vector.clear();
+  }
+
+  KickMap temp_kickmap(magnet.get_physical_length(), grid.x, grid.y, kick_x, kick_y);
+  kickmap = temp_kickmap;
+}
+
+void write_fieldmap_file(Magnet& magnet, std::string filename, std::vector<double> x_vector, std::vector<double> y_vector, std::vector<double> z_vector){
   std::ofstream output_file(filename.c_str());
 
   if(!output_file){
@@ -224,7 +233,7 @@ void write_fieldmap_file(InsertionDevice& insertiondevice, std::string filename,
       for (int j=0; j < y_vector.size(); j+=1){
         for(int k = 0; k < x_vector.size(); k+=1){
           pos.x = x_vector[k]; pos.y = y_vector[j]; pos.z = z_vector[i];
-          b = insertiondevice.field(pos);
+          b = magnet.field(pos);
           output_file << std::scientific << std::showpos << pos.x*1000 << " ";
           output_file << std::scientific << std::showpos << pos.y*1000 << " ";
           output_file << std::scientific << std::showpos << pos.z*1000 << " ";
@@ -239,12 +248,12 @@ void write_fieldmap_file(InsertionDevice& insertiondevice, std::string filename,
   }
 }
 
-void write_fieldmap_file(InsertionDevice& insertiondevice, std::string filename, std::vector<double> x_vector, double y_value, std::vector<double> z_vector){
+void write_fieldmap_file(Magnet& magnet, std::string filename, std::vector<double> x_vector, double y_value, std::vector<double> z_vector){
   std::vector<double> y_vector; y_vector.push_back(y_value);
-  write_fieldmap_file(insertiondevice, filename, x_vector, y_vector, z_vector);
+  write_fieldmap_file(magnet, filename, x_vector, y_vector, z_vector);
 }
 
-void write_fieldmap_files(InsertionDevice& insertiondevice, std::string label, std::vector<double> x_vector, std::vector<double> y_vector, std::vector<double> z_vector){
+void write_fieldmap_files(Magnet& magnet, std::string label, std::vector<double> x_vector, std::vector<double> y_vector, std::vector<double> z_vector){
   std::vector<double> y_value;
   std::ostringstream y_str;
   std::string filename_y;
@@ -259,7 +268,7 @@ void write_fieldmap_files(InsertionDevice& insertiondevice, std::string label, s
     else { filename_y = label + "_yp" + y_str + ".txt"; }
 
     y_value.push_back(y_vector[i]);
-    write_fieldmap_file(insertiondevice, filename_y, x_vector, y_value, z_vector);
+    write_fieldmap_file(magnet, filename_y, x_vector, y_value, z_vector);
     y_value.clear();
   }
 

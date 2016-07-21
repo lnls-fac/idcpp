@@ -127,10 +127,9 @@ int main(int argc, char ** argv) {
     if (inputs.mask_shape_in_file){ mask.load(inputs.mask_filename); }
     else { mask.load(inputs.mask_shape, inputs.mask_width, inputs.mask_height); }
     FieldMapContainer fieldmaps(inputs.fieldmap_filenames);
-    InsertionDevice insertiondevice(fieldmaps);
 
     KickMap kickmap;
-    insertiondevice.calc_kickmap(grid, mask, inputs.energy, inputs.rkstep, kickmap);
+    calc_kickmap(fieldmaps, grid, mask, inputs.energy, inputs.rkstep, kickmap);
     save_kickmap(inputs.kickmap_filename, kickmap);
 
     clock_gettime(CLOCK_MONOTONIC, &finish);

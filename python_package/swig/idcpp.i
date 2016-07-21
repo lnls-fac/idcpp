@@ -8,6 +8,7 @@
 
 %include "std_string.i"
 %include "std_vector.i"
+%include "cpointer.i"
 
 %include "api.h"
 %include "vector3d.hpp"
@@ -15,6 +16,7 @@
 
 %template(CppVector3D) Vector3D<double>;
 %template(CppMatrix3D) Matrix3D<double>;
+%pointer_functions(double, doublep);
 
 namespace std {
       %template(CppStringVector) vector<string>;

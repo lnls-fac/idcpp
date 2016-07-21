@@ -88,46 +88,16 @@ HalbachCassette& HalbachCassette::set_center_pos(Vector3D<double> pos){
   return *this;
 }
 
-HalbachCassette& HalbachCassette::set_first_block_pos(Vector3D<double> pos){
-  Vector3D<double> old_pos = this->get_first_block_pos();
-  Vector3D<double> dr = pos - old_pos;
-  this->shift_pos(dr);
-  return *this;
-}
-
-HalbachCassette& HalbachCassette::set_last_block_pos(Vector3D<double> pos){
-  Vector3D<double> old_pos = this->get_last_block_pos();
-  Vector3D<double> dr = pos - old_pos;
-  this->shift_pos(dr);
-  return *this;
-}
-
-Vector3D<double> HalbachCassette::get_center_pos(){
+Vector3D<double> HalbachCassette::get_center_pos() const{
   Vector3D<double> center = this->blocks[0].get_pos();
   double zm = 0.5 * (this->blocks.front().get_pos().z + this->blocks.back().get_pos().z);
   center.z = zm;
   return center;
 }
 
-Vector3D<double> HalbachCassette::get_dim(){
+Vector3D<double> HalbachCassette::get_dim() const{
   Vector3D<double> dim = this->blocks[0].get_dim();
   double zlength = std::fabs(this->blocks.front().get_pos().z - this->blocks.back().get_pos().z);
   dim.z = zlength;
   return dim;
-}
-
-Vector3D<double> HalbachCassette::get_block_dim(){
-  Vector3D<double> dim = this->blocks[0].get_dim();
-  return dim;
-}
-
-Vector3D<double> HalbachCassette::get_first_block_pos(){
-  Vector3D<double> pos = this->blocks[0].get_pos();
-  return pos;
-}
-
-Vector3D<double> HalbachCassette::get_last_block_pos(){
-  int n = this->blocks.size();
-  Vector3D<double> pos = this->blocks[n-1].get_pos();
-  return pos;
 }
