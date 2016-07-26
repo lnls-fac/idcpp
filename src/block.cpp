@@ -19,12 +19,28 @@ Matrix3D<double> SubVolume::get_gmatrix(const Vector3D<double>& r) const {
       for(unsigned int k=0; k<2; k++) {
         int sign = (i+j+k)&1?-1:1;
         double   mod  = std::sqrt(x[i]*x[i] + y[j]*y[j] + z[k]*z[k]);
-        gxx += sign * std::atan (y[j]*z[k]/(x[i]*mod));
-        gyy += sign * std::atan (x[i]*z[k]/(y[j]*mod));
-        gzz += sign * std::atan (y[j]*x[i]/(z[k]*mod));
-        gxy += - sign * std::log(z[k] + mod);
-        gxz += - sign * std::log(y[j] + mod);
-        gyz += - sign * std::log(x[i] + mod);
+        // if (mod == 0) {
+        //   Vector3D<double> nan(NAN,NAN,NAN);
+        //   return Matrix3D<double>(nan,nan,nan);
+        // }
+        const double tgxx = sign * std::atan (y[j]*z[k]/(x[i]*mod));
+        const double tgyy = sign * std::atan (x[i]*z[k]/(y[j]*mod));
+        const double tgzz = sign * std::atan (y[j]*x[i]/(z[k]*mod));
+        const double tgxy = - sign * std::log(z[k] + mod);
+        const double tgxz = - sign * std::log(y[j] + mod);
+        const double tgyz = - sign * std::log(x[i] + mod);
+        if (std::isfinite(tgxx)) gxx += tgxx;
+        if (std::isfinite(tgyy)) gyy += tgyy;
+        if (std::isfinite(tgzz)) gzz += tgzz;
+        if (std::isfinite(tgxy)) gxy += tgxy;
+        if (std::isfinite(tgxz)) gxz += tgxz;
+        if (std::isfinite(tgyz)) gyz += tgyz;
+        // gxx += sign * std::atan (y[j]*z[k]/(x[i]*mod));
+        // gyy += sign * std::atan (x[i]*z[k]/(y[j]*mod));
+        // gzz += sign * std::atan (y[j]*x[i]/(z[k]*mod));
+        // gxy += - sign * std::log(z[k] + mod);
+        // gxz += - sign * std::log(y[j] + mod);
+        // gyz += - sign * std::log(x[i] + mod);
       }
     }
   }
