@@ -31,51 +31,12 @@ void newton_lorentz_equation(double alpha, Vector3D<> r, Vector3D<> p,  Vector3D
 
 }
 
-void runge_kutta(Magnet& magnet, double energy, Vector3D<> r, Vector3D<> p, double zmax, double step, const Mask& mask,  Vector3D<>& kick) {
-
-  double brho, beta;
-  calc_brho(energy, brho, beta);
-
-  double alpha = 1.0/brho/beta;
-  bool inside = true;
-  Vector3D<> b; Vector3D<> b1; Vector3D<> b2; Vector3D<> b3;
-  Vector3D<> kr1; Vector3D<> kp1; Vector3D<> r1; Vector3D<> p1;
-  Vector3D<> kr2; Vector3D<> kp2; Vector3D<> r2; Vector3D<> p2;
-  Vector3D<> kr3; Vector3D<> kp3; Vector3D<> r3; Vector3D<> p3;
-  Vector3D<> kr4; Vector3D<> kp4;
-
-  while (r.z < zmax) {
-
-    inside = mask.is_inside(r); if(!inside) { p.x = p.y = p.z = NAN; break; }
-    b = magnet.field(r);
-    newton_lorentz_equation(alpha, r, p, b, kr1, kp1);
-    r1 = r + (step/2.0)* kr1;
-    p1 = p + (step/2.0)* kp1;
-
-    inside = mask.is_inside(r1); if(!inside) { p.x = p.y = p.z = NAN; break; }
-    b1 = magnet.field(r1);
-    newton_lorentz_equation(alpha, r1, p1, b1, kr2, kp2);
-    r2 = r + (step/2.0)* kr2;
-    p2 = p + (step/2.0)* kp2;
-
-    inside = mask.is_inside(r2); if(!inside) { p.x = p.y = p.z = NAN; break; }
-    b2 = magnet.field(r2);
-    newton_lorentz_equation(alpha, r2, p2, b2, kr3, kp3);
-    r3 = r + step* kr3;
-    p3 = p + step* kp3;
-
-    inside = mask.is_inside(r3); if(!inside) { p.x = p.y = p.z = NAN; break; }
-    b3 = magnet.field(r3);
-    newton_lorentz_equation(alpha, r3, p3, b3, kr4, kp4);
-
-    r = r + (step/6.0)*(kr1 + 2.0*kr2 + 2.0*kr3 + kr4);
-    p = p + (step/6.0)*(kp1 + 2.0*kp2 + 2.0*kp3 + kp4);
-  }
-  kick = p;
-  // kick = p*(pow(brho, 2.0)); // i think this convertion does not belong to a RK function
-}
-
-void runge_kutta(Magnet& magnet, double energy, Vector3D<> r, Vector3D<> p, double zmax, double step, const Mask& mask, std::vector<std::vector<double> >& trajectory) {
+void runge_kutta( Magnet& magnet,
+                  double energy,
+                  Vector3D<> r, Vector3D<> p,
+                  double zmax, double step,
+                  const Mask& mask,
+                  std::vector<std::vector<double> >& trajectory) {
 
   double brho, beta;
   calc_brho(energy, brho, beta);
@@ -129,6 +90,16 @@ void runge_kutta(Magnet& magnet, double energy, Vector3D<> r, Vector3D<> p, doub
 
   }
 }
+
+
+void runge_kutta(Magnet& magnet, double energy, Vector3D<> r, Vector3D<> p, double zmax, double step, const Mask& mask,  Vector3D<>& kick) {
+  std::vector<std::vector<double> > trajectory;
+  runge_kutta(magnet, energy, r, p, zmax, step, mask, trajectory);
+  kick.x = trajectory.back()[3];
+  kick.y = trajectory.back()[4];
+  kick.z = trajectory.back()[5];
+}
+
 
 void calc_kickmap(Magnet& magnet, double energy, const Grid& grid, double zmin, double zmax, double rk_step, const Mask& mask, KickMap& kickmap) {
 
